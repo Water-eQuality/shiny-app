@@ -1,0 +1,393 @@
+"Project Name","Latitude","Longitude","Project Footprint (Acres)","Drainage Area (Acres)","Actual Storage Capacity (Acre-feet)","Cumulative Volume Addressed (Acre-feet)","Actual Completion Date","Project Type","Capital Costs ($)","Cumulative O&M Costs ($)"
+"100 Harkness Lane",33.85488,-118.3803,NA,NA,NA,4.374066,"9/20/2022","Infiltration Well",52000,13000
+"111 N Gerona",34.10316,-118.10082,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1257,0
+"1112 Beryl Street",33.8539,-118.382,NA,NA,NA,3.221391,"9/20/2022","Infiltration Well",52000,13000
+"1132 Bilton Way",34.08704,-118.10059,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1100,0
+"1136 Bilton Way",34.086938,-118.100588,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1300,0
+"1144 Bilton Way",34.0864853,-118.1002969,0.002,0.28,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"1145 S Palm Ave",34.086331,-118.098271,0.002,0.15,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"1145 Walnut St",34.086339,-118.095956,0.002,0.15,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"1200 Beryl Street _DW 1",33.854,-118.3816,NA,NA,NA,2.652113,"9/20/2022","Infiltration Well",52000,13000
+"1200 Beryl Street _DW 2",33.854,-118.3815,NA,NA,NA,2.652113,"9/20/2022","Infiltration Well",52000,13000
+"1212 Beryl Street",33.85458,-118.3804,NA,NA,NA,3.994715,"9/20/2022","Infiltration Well",52000,13000
+"12200 Civic Center Drive Parking Lot Addition",33.913854,-118.07214,NA,NA,NA,0.591509,"1/2/2017","LID Retrofit, Biofiltration",1e+05,50000
+"125 N Gerona",34.10358,-118.10083,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1568,0
+"128 N Gerona",34.10384,-118.1007,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1849,0
+"135 N San Gabriel Blvd",34.105177,-118.09172,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",2000,0
+"137 W Orange Street",34.094008,-118.101307,0.001,0.1,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"140 Hazell Way",34.086186,-118.100598,0.001,0.07,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"140 N Pine Ave",34.10518,-118.09202,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",2000,0
+"141 N Gerona",34.10428,-118.10082,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1568,0
+"1712 Huntington Ln",33.868,-118.382,NA,NA,NA,2.19913,"12/21/2022","Infiltration Well",52000,13000
+"1813 Harriman Ln",33.867,-118.38,NA,NA,NA,2.312839,"12/21/2022","Infiltration Well",52000,13000
+"1818 Speyer Lane_GS project",33.862392,-118.379491,NA,NA,NA,1.876198,"6/1/2020","Infiltration Well",40000,25500
+"1915 Morgan Ln",33.862,-118.378,NA,NA,NA,2.312839,"12/21/2022","Infiltration Well",52000,13000
+"2000 bk Gate_GS project",33.878443,-118.375025,NA,NA,NA,3.200238,"6/1/2020","Infiltration Well",40000,25500
+"2008 Clark Lane_GS project",33.866067,-118.376087,NA,NA,NA,2.306143,"6/1/2020","Infiltration Well",40000,25500
+"209 Orange St",34.094462,-118.102447,0.001,0.08,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"2200 bk Plant_GS project",33.880892,-118.370152,NA,NA,NA,1.140268,"4/7/2021","Green Street, Bioretention",10000,30000
+"2200 bk Slauson_GS project",33.869444,-118.370547,NA,NA,NA,0.580383,"4/7/2021","Green Street, Bioretention",22000,30000
+"2218 Margaret Ct_GS project",33.860832,-118.370784,NA,NA,NA,2.478858,"6/1/2020","Infiltration Well",40000,25500
+"225 W Angeleno Ave",34.095866,-118.102407,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1200,0
+"2300 bk Mackay Ln_GS project",33.87641983,-118.3684039,NA,NA,NA,1.318086,"4/7/2021","Green Street, Bioretention",17000,30000
+"2421 Marshallfield Ln_GS project",33.865264,-118.366542,NA,NA,NA,2.502774,"6/1/2020","Infiltration Well",40000,25500
+"2500 bk_ Santa Fe Street_GS project",33.889832,-118.366989,NA,NA,NA,5.377744,"2/1/2019","Infiltration Well",72000,30500
+"2600 bk Beland_GS project",33.88268,-118.364596,NA,NA,NA,2.45721,"4/7/2021","Green Street, Bioretention",17000,30000
+"2606 182nd Street",33.865462,-118.362333,NA,NA,NA,2.400609,"4/7/2021","Green Street, Bioretention",15000,30000
+"2607 182nd Street",33.865611,-118.362366,NA,NA,NA,2.305193,"4/7/2021","Green Street, Bioretention",15000,30000
+"3 City parking lots",34.1798,-118.30857,0.06,0.56,0,0,"5/31/2017","Other (specify)",0,1000
+"301 W Orange St",34.094964,-118.10379,0.001,0.08,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"339 E Saxon Ave",34.073028,-118.096056,0.002,0.1,0,0,"7/2/2021","LID Retrofit, Bioretention",6000,0
+"3400 bk Rindge Ln_GS project",33.88613,-118.372754,NA,NA,NA,1.492453,"4/7/2021","Green Street, Bioretention",10000,30000
+"3500 bk Rindge Ln_GS project",33.886839,-118.372802,NA,NA,NA,0.872447,"4/7/2021","Green Street, Bioretention",10000,30000
+"3700 bk_Doolittle Drive_GS project",33.889522,-118.374395,NA,NA,NA,151.267208,"2/1/2019","Green Street, Bioretention",165000,36000
+"400 N Rosemont",34.10787,-118.10701,0.01,0.18,0,0,"7/2/2021","LID Retrofit, Bioretention",8276.48,0
+"416 Adelyn Dr",34.10804,-118.1049,0.003,0.15,0,0,"7/2/2021","LID Retrofit, Bioretention",5991.81,0
+"419 Adelyn Dr",34.10818,-118.10506,0.004,0.15,0,0,"7/2/2021","LID Retrofit, Bioretention",7077.22,0
+"422 E Saxon Ave",34.072782,-118.095013,0.001,0.09,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"500 bk Harkness_GS project",33.85923,-118.381123,NA,NA,NA,1.686794,"4/7/2021","Green Street, Bioretention",15000,30000
+"505 Live Oak",34.10159,-118.09441,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",1938,0
+"534 Montecito Drive",34.095221,-118.106527,0,0,0,0,"6/30/2024","LID Retrofit, Bioretention",900,0
+"541 Adelyn Dr",34.10763,-118.10812,0.001,0.01,0,0,"7/2/2021","LID Retrofit, Bioretention",7100,0
+"601 E Fairview Ave",34.08991,-118.09329,0.01,0.08,0,0,"7/2/2021","LID Retrofit, Bioretention",8300,0
+"613 Paulina",33.852748,-118.381965,NA,NA,NA,0.877763,"4/7/2021","Green Street, Bioretention",10000,30000
+"614 Paulina",33.852841,-118.381895,NA,NA,NA,0.87908,"4/7/2021","Green Street, Bioretention",10000,30000
+"701 E Fairview Ave",34.08997,-118.09206,0.001,0,0,0,"7/2/2021","LID Retrofit, Bioretention",5500,0
+"701 San Salvatorre Pl",34.113526,-118.097111,0.003,0.23,0,0,"7/2/2021","LID Retrofit, Bioretention",2500,0
+"7th Avenue",34.016607,-117.989711,NA,NA,NA,2.594055,"7/31/2013","Green Street, Bioretention",22000,23255
+"8517 E Hermosa Dr",34.106266,-118.083227,0.001,0.08,0,0,"7/2/2021","LID Retrofit, Bioretention",2340.31,0
+"8th Street and Monterey Blvd",33.859616,-118.397356,NA,NA,NA,9.211326,"11/7/2019","Green Street, Bioretention",57500,8400
+"8th Street and Valley Drive",33.860168,-118.394266,NA,NA,NA,5.537267,"11/7/2019","Green Street, Bioretention",57500,8400
+"930 Anderson Way",34.090375,-118.105043,0.002,0.15,0,0,"7/1/2022","LID Retrofit, Bioretention",0,0
+"ATP Cycle 3_ Pacific Avenue Complete Street",34.080556,-117.956916,NA,NA,NA,0,"8/9/2020","Green Street, Bioretention",0,0
+"Acacia Avenue Storm Drain Infiltration Project",34.1354972,-118.2443555,0.02,18.6,1.2,1.9,"12/31/2023","Infiltration Well",0,0
+"Agnes Ave Green Street",34.18676,-118.41172,1,80,0,0,"6/15/2021","Green Street, Bioretention",2488600,227042
+"Alamitos Beach Concession Building",33.764227,-118.183177,NA,NA,NA,0.89347,"4/30/2022","LID Retrofit, Bioretention",0,10240
+"Alamitos Parking Lot Improvements",33.765026,-118.182834,NA,NA,NA,7.283424,"4/30/2016","LID Retrofit, Bioretention",0,10240
+"Albion Riverside Park",34.06879,-118.22355,6,300,5,533.04,"6/27/2019","Regional Infiltration Gallery",22208406,5497948
+"Altadena Home Retrofits and Parkway Basins Project",34.191118,-118.158473,0.05,29.3,0.06,0.07,"6/30/2023","Green Street, Bioretention",420000,0
+"Amie Basin Enhancement",33.845638,-118.349808,NA,NA,NA,1513.479814,"8/20/2015","Regional Infiltration Gallery",1250000,520000
+"Amie Basin Expansion",33.845638,-118.349808,NA,NA,NA,142.785654,"11/2/2023","Regional Infiltration Gallery",4e+05,133304.1
+"Arrow Highway Rehabilitation",34.10604657,-117.873797,NA,NA,NA,0.496112,"11/29/2023","Green Street, Biofiltration",150000,300
+"Arroyo Boulevard (Rose Bowl Entry) Project",34.15783,-118.167224,1.5,2.4,0.16,18.44,"1/2/2014","LID Retrofit, Bioretention",2075727,0
+"Arroyo Seco LFD Hermon Dog Park AS-21",34.10442255,-118.2029094,0.1,266,2.54,9.24,"3/8/2024","Diversion to Sanitary Sewer",4060163,60902
+"Arroyo Seco LFD Sycamore Grove Park AS-15",34.10040967,-118.2029094,0.1,1135,3.36,15.48,"3/8/2024","Diversion to Sanitary Sewer",2666746,40001
+"Arterial Street Resurfacing In Paramount Boulevard",33.907611,-118.160278,NA,NA,NA,0,"10/12/2019","Infiltration Well",0,0
+"Arterial Street Resurfacing on Alondra Boulevard #1",33.889253,-118.18479,NA,NA,NA,0.206522,"1/1/2021","Infiltration Well",0,0
+"Arterial Street Resurfacing on Alondra Boulevard #2",33.889005,-118.184354,NA,NA,NA,0.206522,"1/1/2021","Infiltration Well",0,0
+"Arterial Street Resurfacing on Downey Ave #1",33.88756733,-118.1514914,NA,NA,NA,0.206748,"1/1/2021","Infiltration Well",0,0
+"Arterial Street Resurfacing on Downey Ave #2",33.88368,-118.151758,NA,NA,NA,0.206748,"1/1/2021","Infiltration Well",0,0
+"Arterial Street Resurfacing on Downey Ave and Madison St #1",33.891042,-118.152958,NA,NA,NA,0.16804,"1/1/2023","Infiltration Well",84000,1500
+"Arterial Street Resurfacing on Downey Ave and Madison St #2",33.891197,-118.152828,NA,NA,NA,0.249877,"1/1/2023","Infiltration Well",84000,1500
+"Arterial Street Resurfacing on Downey Boulevard",33.887567,-118.151491,NA,NA,NA,0,"1/1/2021","Infiltration Well",0,0
+"Arterial Street Resurfacing on Orange Ave and Alondra Blvd",33.889498,-118.177602,NA,NA,NA,0,"12/1/2024","Infiltration Well",1e+05,250
+"Arterial Street Resurfacing on Orange Ave and Myrrh St",33.893526,-118.177409,NA,NA,NA,0,"12/1/2024","Infiltration Well",1e+05,250
+"Arterial Street Resurfacing on Orange Ave and San Luis St",33.897352,-118.177607,NA,NA,NA,0.21826,"6/30/2023","Infiltration Well",89000,1500
+"Atlantic Avenue Improvements",33.941537,-118.181459,NA,NA,NA,0,"1/2/2016","Green Street, Biofiltration",150000,3500
+"Atlantic Place Tract Green Street",33.890385,-118.185512,NA,NA,NA,0,"1/2/2017","Green Street, Bioretention",0,0
+"Avalon North Green Alley",33.993802,-118.271703,1,5,0.13,32.06,"9/1/2016","Green Street, Biofiltration",1471628,345689
+"Avalon South Green Alley",33.995917,-118.265974,1,3,0.13,21.92,"9/1/2015","Green Street, Biofiltration",1600000,423978
+"Avocado Heights Multiuse Trail",34.034692,-117.98675,NA,NA,NA,0.647591,"9/26/2014","Green Street, Bioretention",7500,2021.9
+"Avocado Heights Multiuse Trail",34.033435,-117.98798,NA,NA,NA,0.477731,"9/26/2014","Green Street, Bioretention",7500,1444.2
+"Avocado Heights Multiuse Trail",34.03365,-117.987766,NA,NA,NA,1.029776,"9/26/2014","Green Street, Bioretention",7500,3080.8
+"Avocado Heights Multiuse Trail",34.029012,-117.992456,NA,NA,NA,7.895836,"9/26/2014","Green Street, Bioretention",7500,23876.2
+"Avocado Heights Multiuse Trail",34.032037,-117.989389,NA,NA,NA,1.52874,"9/26/2014","Green Street, Bioretention",7500,4621.2
+"Avocado Heights Multiuse Trail",34.034548,-117.986889,NA,NA,NA,0.626358,"9/26/2014","Green Street, Bioretention",7500,1925.6
+"Avocado Heights Multiuse Trail",34.032634,-117.988797,NA,NA,NA,0.552044,"9/26/2014","Green Street, Bioretention",7500,1636.9
+"Avocado Heights Multiuse Trail",34.036564,-117.984898,NA,NA,NA,0.594509,"9/26/2014","Green Street, Bioretention",7500,1829.4
+"Avocado Heights Multiuse Trail",34.036314,-117.985146,NA,NA,NA,0.828067,"9/26/2014","Green Street, Bioretention",7500,2503.1
+"Avocado Heights Multiuse Trail",34.029515,-117.991894,NA,NA,NA,0.997928,"9/26/2014","Green Street, Bioretention",7500,2984.6
+"Avocado Heights Multiuse Trail",34.035541,-117.985912,NA,NA,NA,0.615742,"9/26/2014","Green Street, Bioretention",7500,1925.6
+"Avocado Heights Multiuse Trail",34.032807,-117.988619,NA,NA,NA,0.721904,"9/26/2014","Green Street, Bioretention",7500,2214.4
+"Avocado Heights Multiuse Trail",34.035055,-117.986396,NA,NA,NA,1.794147,"9/26/2014","Green Street, Bioretention",7500,5391.4
+"Avocado Heights Multiuse Trail",34.034839,-117.986608,NA,NA,NA,0.276023,"9/26/2014","Green Street, Bioretention",7500,770.2
+"Avocado Heights Multiuse Trail",34.029784,-117.99162,NA,NA,NA,0.244173,"9/26/2014","Green Street, Bioretention",7500,770.2
+"Avocado Heights Multiuse Trail",34.030315,-117.991094,NA,NA,NA,2.431121,"9/26/2014","Green Street, Bioretention",7500,7317
+"Avocado Heights Multiuse Trail",34.03007,-117.991341,NA,NA,NA,0.180477,"9/26/2014","Green Street, Bioretention",7500,577.7
+"Avocado Heights Multiuse Trail",34.033047,-117.988367,NA,NA,NA,0.414033,"9/26/2014","Green Street, Bioretention",7500,1251.7
+"Avocado Heights Multiuse Trail",34.032978,-117.988437,NA,NA,NA,0.191093,"9/26/2014","Green Street, Bioretention",7500,577.7
+"Avocado Heights Multiuse Trail",34.032421,-117.989008,NA,NA,NA,0.966079,"9/26/2014","Green Street, Bioretention",7500,2888.3
+"Avocado Heights Multiuse Trail",34.035737,-117.985718,NA,NA,NA,0.828067,"9/26/2014","Green Street, Bioretention",7500,2503.1
+"Avocado Heights Multiuse Trail",34.035952,-117.985505,NA,NA,NA,0.244173,"9/26/2014","Green Street, Bioretention",7500,770.2
+"Avocado Heights Multiuse Trail",34.034268,-117.987161,NA,NA,NA,0.870532,"9/26/2014","Green Street, Bioretention",7500,2599.6
+"Avocado Heights Multiuse Trail",34.033296,-117.988119,NA,NA,NA,1.210252,"9/26/2014","Green Street, Bioretention",7500,3754.8
+"Avocado Heights Multiuse Trail",34.036473,-117.984987,NA,NA,NA,0.477731,"9/26/2014","Green Street, Bioretention",7500,1444.2
+"Avocado Heights Multiuse Trail",34.031787,-117.989636,NA,NA,NA,1.061625,"9/26/2014","Green Street, Bioretention",7500,3273.3
+"Avocado Heights Multiuse Trail",34.036098,-117.98536,NA,NA,NA,0.891765,"9/26/2014","Green Street, Bioretention",7500,2695.8
+"Avocado Heights Multiuse Trail",34.034979,-117.986471,NA,NA,NA,0.265406,"9/26/2014","Green Street, Bioretention",7500,770.2
+"Avocado Heights Multiuse Trail",34.031095,-117.990309,NA,NA,NA,2.505435,"9/26/2014","Green Street, Bioretention",7500,7605.8
+"Avocado Heights Multiuse Trail",34.035428,-117.986025,NA,NA,NA,0.445881,"9/26/2014","Green Street, Bioretention",7500,1347.9
+"BWP Campus SUSMP infiltration",34.17794,-118.31672,0.46,4.6,0.26,0.45,"10/31/2013","Other (specify)",0,3820
+"Badillo East Rehabilitation",34.086288,-117.890226,NA,NA,NA,0,"7/1/2021","Green Street, Biofiltration",150000,21640
+"Badillo West Rehabilitation",34.086198,-117.863853,NA,NA,NA,0,"1/2/2021","Green Street, Biofiltration",150000,21640
+"Ballentine Pl et al",34.095845,-117.928683,NA,NA,NA,55.632366,"5/22/2019","Green Street, Bioretention",456000,56275
+"Banna Ave & Badillo St Median Renovation",34.08628611,-117.8596407,NA,NA,NA,0.042239,"10/19/2023","Green Street, Biofiltration",107760,300
+"Banna Park Improvement",34.095417,-117.858505,NA,NA,NA,0,"10/20/2020","LID Retrofit, Bioretention",120000,21470
+"Bellflower Caruthers Park SW and Urban Runoff Capture Project, LCC WMP",33.878452,-118.111056,NA,NA,NA,25.116951,"3/31/2023","Regional Infiltration Gallery",4160000,72474.37
+"Bellflower Caruthers Park SW and Urban Runoff Capture Project, LSGR WMP",33.880182,-118.109036,NA,NA,NA,73.640138,"3/31/2023","Regional Infiltration Gallery",8840000,72474.37
+"Berkshire Creek Area Improvements Project",34.1939337,-118.1776534,0.5,0.5,5,0.11,"1/2/2020","Other (specify)",1300000,77139
+"Bixby Park Bluff Improvements",33.763514,-118.168343,NA,NA,NA,2.47562,"11/30/2014","LID Retrofit, Bioretention",0,10240
+"Bluff Cove bluff top restoration",33.791742,-118.405032,NA,NA,NA,23.511706,"4/1/2015","LID Retrofit, Bioretention",1175000,0
+"Bolivar Park Stormwater Management Project",33.846087,-118.152593,NA,NA,NA,0,"5/2/2018","Regional Infiltration Gallery",1.1e+07,694154.53
+"Bradley Green Alley",34.18676,-118.41172,1,3.1,0,0,"3/25/2021","Green Street, Bioretention",3143870,154006
+"Brea Canyon Road Street Improvements",33.967839,-117.84725,NA,NA,NA,4.768694,"12/5/2017","Green Street, Biofiltration",199800,16000
+"Broad Beach Biofiltration Project",34.034409,-118.8514,NA,12.3,NA,NA,"6/30/2015","Other – Biofiltration",NA,NA
+"Broadway Neighborhood Stormwater Greenway",34.000055,-118.276019,1,290,1.63,555.76,"4/1/2016","Green Street, Bioretention",4626502,1144967
+"C4",34.418362,-118.453748,NA,NA,NA,29.722928,"6/3/19 7:00","Regional Infiltration Gallery",3009946,3937
+"Casaba Estates",33.774537,-118.325215,NA,NA,NA,75.014082,"1/1/2016","LID Retrofit, Bioretention",0,0
+"Central Jefferson Green Alley Network",34.0109021,-118.2571779,1.5,11,0.34,12.71,"11/30/2023","Green Street, Biofiltration",3974478,59618
+"Chakemco Street Improvement 1 (Bioretention)",33.940002,-118.179879,NA,NA,NA,0,"12/2/2020","Green Street, Bioretention",1e+05,8500
+"Charter Oak Reservoir No. 4",34.095562,-117.847149,NA,NA,NA,6.18438,"1/2/2016","LID Retrofit, Biofiltration",2e+05,23470
+"Circle Park Parking Lot Improvements",33.938464,-118.16791,NA,NA,NA,0.212042,"9/25/2019","Other (specify)",150000,3000
+"City Hall Landscape Revitilization",34.087953,-117.88903,NA,NA,NA,1.042151,"3/2/2021","LID Retrofit, Biofiltration",250000,23640
+"City Maintenance Yard Access Road",34.014426,-117.952625,NA,NA,NA,0.617473,"4/11/2022","LID Retrofit, Biofiltration",729970,0
+"City of Glendale Transit Center Bir Retention BMP",34.12257,-118.257257,0.003,2.53,0.19,3.08,"7/1/2021","LID Retrofit, Bioretention",77000,1200
+"Clean CA Permeable Alley Pavement Installation Project",34.14681019,-118.2485586,5,30,0,0,"6/30/2024","Other (specify)",8345145,0
+"Colorado Lagoon Restoration Project (Phase 1A, 1B, 2B)",33.770111,-118.134115,NA,NA,NA,0,"5/31/2017","Other (specify)",19120000,0
+"Community Rain Garden Project (2: Sheldon Reservoir 3 Coniston Garden)",34.148058,-118.129429,0.34,1.3,0.07,2.96,"1/2/2020","LID Retrofit, Bioretention",64187,4000
+"Community Rain Garden Project (2: behind Behner Treatment plant, Sierra Madre)",34.161511,-118.146121,0.08,1,0.05,1.5,"1/2/2022","LID Retrofit, Bioretention",42000,0
+"Compton Creek Stormwater and Urban Runoff Capture and Reuse Project at Earvin ""Magic"" Johnson Park",33.918951,-118.264248,126,354.51,7,365.68,"12/8/2020","Regional Treatment Facility",28323000,1512462.54
+"Cougar Park",34.082509,-117.894163,NA,NA,NA,8.298072,"1/2/2016","LID Retrofit, Bioretention",3e+05,23470
+"Cougar Park Parking Lot (LID)",34.081041,-117.892185,NA,NA,NA,0.180647,"1/13/2023","LID Retrofit, Bioretention",250000,470
+"Covina Senior and Community Center",34.094157,-117.883058,NA,NA,NA,5.873714,"8/7/2019","LID Retrofit, Bioretention",2e+05,33470
+"DMA-1: Chandler Ranch-Rolling Hills Country Club Regional Project",33.783356,-118.322744,NA,NA,NA,890.596594,"1/3/2018","Regional Infiltration Gallery",0,0
+"DMA-2: Chandler Ranch-Rolling Hills Country Club",33.782448,-118.320598,NA,NA,NA,48.288387,"1/3/2018","Regional Infiltration Gallery",0,0
+"DMA-3: Chandler Ranch-Rolling Hills Country Club Regional Project",33.783875,-118.320212,NA,NA,NA,4.493591,"1/3/2018","Regional Infiltration Gallery",0,0
+"Daisy - Myrtle Roundabouts",33.867323,-118.182058,NA,NA,NA,1.82113,"1/1/2019","Green Street, Bioretention",0,0
+"Deforest Wetland Restoration Project",33.8632,-118.194878,NA,NA,NA,5629.117192,"6/30/2018","Regional Infiltration Gallery",8300000,0
+"Del Amo Blvd. at Lakewood Blvd.",33.847045,-118.140328,NA,NA,NA,1.525281,"7/1/2021","Green Street, Biofiltration",3e+05,10000
+"Del Amo Boulevard Rehabilitation Project Phase 1",33.846178,-118.067746,NA,NA,NA,11.688325,"1/1/2017","Green Street, Bioretention",0,0
+"Del Amo Boulevard Rehabilitation Project Phase 2",33.846299,-118.077757,NA,NA,NA,2.118633,"1/10/2020","Green Street, Bioretention",0,0
+"Desiderio Neighborhood Park",34.143787,-118.164526,3.8,3.8,0.06,15.68,"1/2/2019","LID Retrofit, Biofiltration",2095000,0
+"Distributed Drywells (East Glenoaks Blvd)",34.152999,-118.20281,0.003,0.46,0.15,0.45,"2/21/2019","Infiltration Well",75000,3025
+"Distributed Drywells (East Palmer Avenue)",34.132646,-118.23976,0.003,1.8,0.12,0.29,"2/21/2019","Infiltration Well",75000,3025
+"Distributed Drywells (San Fernando Road)",34.155904,-118.276763,0.003,4,0.55,1.48,"2/21/2019","Infiltration Well",75000,3025
+"Duncan Ave Street Improvement",33.929083,-118.181023,NA,NA,NA,0.14531,"7/1/2019","LID Retrofit, Bioretention",0,0
+"East Broadway Project",34.14683077,-118.2630035,0,0,0.08,0,"10/14/2022","LID Retrofit, Bioretention, Infiltration Well",322149,7200
+"East LA Sustainable Medians Stormwater Capture Project",34.013762,-118.134065,7.6,3000,22,195.37,"12/20/2021","Infiltration Well",36840000,1217017
+"Echo Park Lake Rehabilitation",34.073308,-118.260012,13,778,88,1099.58,"11/5/2013","Regional Treatment Facility",45896664,29831575
+"Ed P. Reyes River Greenway",34.075737,-118.224271,1.13,135,1.15,419.1,"11/1/2013","Green Street, Biofiltration",4400000,703940
+"El Centro Street Improvement Project",34.114824,-118.151754,0,0.1,0.01,0,"1/2/2018","LID Retrofit, Bioretention",0,1041.24
+"El Dorado Duck Pond Restoration Project",33.80044177,-118.0966038,NA,NA,NA,0.097833,"6/17/2024","LID Retrofit, Harvest and Reuse",9e+06,0
+"Elmer Avenue Green Street Phase ll",34.211076,-118.376872,1,45,0,0,"11/19/2013","Green Street, Bioretention",2530000,809531
+"Elmer Paseo Green Alley",34.209814,-118.376878,1,20,0.15,162.88,"11/1/2013","Green Street, Bioretention",550000,175985
+"Entradero Basin Enhancement",33.853384,-118.371843,NA,NA,NA,434.730955,"8/20/2015","Regional Infiltration Gallery",1900000,255000
+"Entradero Basin Expansion",33.853384,-118.371843,NA,NA,NA,40.746061,"11/2/2023","Regional Infiltration Gallery",1800000,37653.89
+"Fernwood Ave Park",33.928872,-118.217772,NA,NA,NA,0.09975,"10/14/2023","LID Retrofit, Bioretention",0,0
+"Filterra at Imperial Blvd and LBB",33.930776,-118.211517,NA,NA,NA,3.766594,"7/1/2019","Green Street, Biofiltration",0,0
+"Filterra at MLK Jr Blvd and LBB",33.937042,-118.213465,NA,NA,NA,3.766594,"7/1/2019","Green Street, Biofiltration",0,0
+"Fire Station 62",34.040999,-118.129234,0.001,0.33,0.03,0.78,"9/30/2021","LID Retrofit, Biofiltration",5128000,0
+"Firestone Blvd Cooridor Enhancement",33.953531,-118.199012,NA,NA,NA,10.110026,"10/29/2019","Infiltration Well",3e+05,1500
+"Firestone Blvd Street Improvements (CIP No. 15-14)",33.94708257,-118.1508353,NA,NA,NA,0.202824,"4/28/2020","Green Street, Biofiltration",2181640.25,310
+"Florence Ave Widening Project",33.935198,-118.088343,NA,NA,NA,0,"9/1/2020","LID Retrofit, Bioretention",150000,0
+"Foothill Project",34.10718,-117.72606,NA,NA,NA,NA,"7/21/2020","Green Street, Bioretention",8800000,132143
+"Foothill Project",34.1071,-117.71911,NA,NA,NA,NA,"7/21/2020","Green Street, Bioretention",8800000,132143
+"Foster Ave Drainage Improvements",34.072002,-117.971946,NA,NA,NA,0,"9/16/2023","Green Street, Biofiltration",293631.34,0
+"Franklin D. Roosevelt Park Regional Stormwater Capture Project",33.969568,-118.241871,8,203,8.5,254.66,"4/29/2020","Regional Infiltration Gallery",9700000,1488506
+"Garfield & Firestone Blvd",33.949085,-118.16509,NA,NA,NA,1.721034,"1/2/2017","Green Street, Biofiltration",75000,33500
+"Garfield Ave Complete Street Improvement Project",33.9238542,-118.1691453,NA,NA,NA,0,"4/9/2024","Green Street, Bioretention",NA,NA
+"Garfield Reservoir Replacement",34.122058,-118.145189,0,2.3,0.17,0,"7/2/2018","LID Retrofit, Biofiltration",0,1554.98
+"Gates Canyon Stormwater Improvements Project",34.16101,-118.69221,NA,NA,NA,3.532648,"6/14/2023","Regional Treatment Facility",12877000,426331.45
+"Glenoaks-Filmore Green Street",34.27672,-118.41476,1,115,0.11,113.89,"6/15/2021","Green Street, Bioretention",3240000,295595
+"Glenoaks-Sunland Stormwater Capture",34.22999,-118.366534,0.02,302,0.11,107.85,"6/1/2014","Green Street, Bioretention",508696,153902
+"Granada Parking Lot Improvements",33.757799,-118.143555,NA,NA,NA,29.516273,"1/30/2018","LID Retrofit, Bioretention",0,0
+"Grand Avenue & Golden Springs Drive Widening Green Street Project",34.006668,-117.821715,NA,NA,NA,0,"5/31/2024","Green Street, Biofiltration",1402973,0
+"Green Alley Project",34.20966,-118.210503,0.13,0.6,0.06,1.56,"4/6/2021","Green Street, Biofiltration",203550,14911
+"Ham Park",33.9142,-118.189915,NA,NA,NA,0.810322,"1/1/2017","LID Retrofit, Biofiltration",0,0
+"Harkness_Armour_GS project",33.85878406,-118.3810967,NA,NA,NA,2.618573,"4/7/2021","Green Street, Bioretention",24000,30000
+"Harvard St/Loiuse St -- Proposition 84 Green Street",34.144455,-118.252609,0.003,7.18,0.7,24.35,"5/2/2017","LID Retrofit, Bioretention",1e+06,4602
+"Hawthorne Boulevard Median Landscape Project",33.760855,-118.393576,NA,NA,NA,10.258829,"11/20/2020","Green Street, Bioretention",2115166,215990.56
+"Henrietta Basin Enhancement",33.844986,-118.37183,NA,NA,NA,1749.184368,"8/20/2015","Regional Infiltration Gallery",1287320,255000
+"Henrietta Basin Expansion",33.844986,-118.37183,NA,NA,NA,95.867546,"11/2/2023","Regional Infiltration Gallery",1300000,20449.89
+"Heritage Park",33.799859,-118.168765,NA,NA,NA,0.475145,"4/27/2022","Infiltration Well",3e+06,0
+"Historic District Recreational Trails Project",33.865571,-118.090832,NA,NA,NA,2.592652,"4/2/2020","LID Retrofit, Bioretention",1e+05,50000
+"Hollydale Regional Park",33.920153,-118.174729,NA,NA,NA,4.53877,"4/8/2020","LID Retrofit, Bioretention",3e+05,6000
+"Houghton Park Community Center Renovation Project",33.869674,-118.183557,NA,NA,NA,2.597934,"7/1/2020","LID Retrofit, Bioretention",0,10240
+"IBCE East Basin",34.029778,-117.821635,NA,NA,NA,940.654881,"2/1/2017","LID Retrofit, Biofiltration",80330,369210
+"IBCE North Basin",34.016679,-117.827977,NA,NA,NA,108.135883,"8/1/2018","LID Retrofit, Biofiltration",55630,38405
+"IBCE South Basin",34.009451,-117.825331,NA,NA,NA,29.675678,"8/1/2018","LID Retrofit, Biofiltration",55630,21395
+"IBCE West Basin",34.003785,-117.839084,NA,NA,NA,1311.398854,"1/1/2017","LID Retrofit, Biofiltration",143120,144870
+"Improvements of Avenue 64 (SD 64)",34.12711,-118.176471,0.01,1.1,0.01,0.12,"12/1/2023","Infiltration Well",2e+05,0
+"Improvements of Avenue 64 (SD B)",34.12737,-118.17614,0.01,0.64,0.005,0.1,"12/1/2023","Infiltration Well",2e+05,0
+"Infiltration Trench Public Alley - Burbank Blvd/Griffith Park Dr",34.18209,-118.32664,0.08,0.8,0.1,0.23,"2/18/2021","Other (specify)",0,1000
+"Joe Miller Field Toilet Rooms",33.97325331,-118.0338122,NA,NA,NA,0.124954,"8/8/2013","LID Retrofit, Bioretention",208000,1500
+"Jr Lifeguard Facility",33.7528,-118.1343,NA,NA,NA,0.01689,"6/30/2023","Infiltration Well",2780000,0
+"Junipero Beach Concession Building (Phase 1)",33.762746,-118.163635,NA,NA,NA,0.641757,"10/30/2019","LID Retrofit, Bioretention",0,10240
+"Junipero Beach-Phase 2 & Granada Beach Concession",33.762279,-118.16308,NA,NA,NA,0.800602,"5/19/2021","LID Retrofit, Bioretention",0,10240
+"Junipero Parking Lot Improvements",33.762569,-118.164882,NA,NA,NA,21.12136,"7/30/2015","LID Retrofit, Bioretention",0,10240
+"Karmont Avenue and Adella Avenue Stormwater Infiltration Wells Improvement Project - Stormwater Well 1 (Karmont)",33.939621,-118.165875,NA,NA,NA,0.234429,"10/26/2023","Infiltration Well",150000,1000
+"Karmont Avenue and Adella Avenue Stormwater Infiltration Wells Improvement Project - Stormwater Well 2 (Adella)",33.938156,-118.178539,NA,NA,NA,0.112843,"10/27/2023","Infiltration Well",150000,1000
+"LA River LFD (2nd St & Sante Fe LFD#1, R2-02)",34.04716272,-118.237144,0.1,1710,2.35,3.41,"3/8/2024","Diversion to Sanitary Sewer",4822479,72337
+"LA River LFD (Mission Rd, LFD#3, R2-G)",34.05335999,-118.2270232,0.1,2490,2.07,13.2,"3/8/2024","Diversion to Sanitary Sewer",4701210,70518
+"LA River LFD (Palmetto, LFD#2, R2-J)",34.04040823,-118.23084,0.1,169,1.22,5.43,"3/8/2024","Diversion to Sanitary Sewer",4285845,64288
+"LB-MUST Street Improvements",33.777487,-118.204018,NA,NA,NA,0.40049,"1/20/2021","Green Street, Biofiltration",0,10240
+"LCC Sub-Basin 4 Stormwater Capture Facility",33.813749,-118.141306,NA,NA,NA,1347.89591,"9/1/2020","Regional Infiltration Gallery",0,32000
+"LOS PALACIOS DRIVE, ET AL",33.992209,-117.911248,NA,NA,NA,0.074453,"3/31/2016","Green Street, Bioretention",7500,3813.7
+"LOS PALACIOS DRIVE, ET AL",33.990849,-117.903853,NA,NA,NA,0.074453,"3/31/2016","Green Street, Bioretention",7500,3813.7
+"Ladera Linda Community Park Project",33.737923,-118.349043,NA,NA,NA,1.61456,"11/29/2023","LID Retrofit, Biofiltration",13721000,27163.72
+"Lakewood Blvd Improvements (Phase 3C): Bioswale",33.956433,-118.112797,NA,NA,NA,9.672871,"6/30/2019","Green Street, Bioretention",0,1578
+"Lakewood Blvd Improvements (Phase 3C): Infiltration Basin",33.956257,-118.112003,NA,NA,NA,13.286673,"6/30/2019","Green Street, Bioretention",0,844
+"Lankershim Blvd Green Street",34.169677,-118.379049,1,107,0.02,91.17,"6/15/2021","Green Street, Bioretention",3780000,344860
+"Las Virgenes Road Green Street Project",34.165649,-118.702627,NA,NA,NA,0.011229,"11/15/2024","Green Street, Biofiltration",5520000,0
+"Laurel Canyon Blvd Green Street",34.250605,-118.423473,1,123,0.2,360.36,"6/1/2017","Green Street, Bioretention",3727456,791958
+"Legacy Park",34.035357,-118.688505,NA,NA,NA,NA,"10/2/2010","Other - Detention",NA,390000
+"Lilita Street and Eve Avenue Storm Drain Improvement Project",33.930118,-118.195876,NA,NA,NA,11.914858,"2/17/2021","Green Street, Bioretention",1236621,39657.25
+"Lincoln EH_GS project",33.880962,-118.371171,NA,NA,NA,8.99424,"4/7/2021","Green Street, Bioretention",70000,30000
+"Lindero Linear Park",34.159855,-118.790731,NA,NA,NA,3.162703,"9/25/2019","LID Retrofit, Biofiltration",4300000,19500
+"Long Beach Civic Center",33.767616,-118.196761,NA,NA,NA,7.034786,"7/1/2019","LID Retrofit, Harvest and Reuse",0,10240
+"Long Beach Civic Center (Lincoln Park)",33.76783,-118.194095,NA,NA,NA,0,"9/26/2024","LID Retrofit, Harvest and Reuse",0,0
+"Louise Ave Street Improvements",33.921323,-118.18224,NA,NA,NA,0.229948,"5/2/2019","Green Street, Bioretention",0,0
+"Lynwood City Hall Annex",33.9265,-118.198747,NA,NA,NA,3.18581,"1/1/2018","LID Retrofit, Bioretention",0,0
+"Lynwood Urban Bike Trail",33.91662,-118.189314,NA,NA,NA,2.399542,"12/3/2022","Green Street, Bioretention",0,0
+"MAPLEGROVE ST ET AL PLAN A",34.040963,-117.931039,NA,NA,NA,0.083587,"4/20/2015","Green Street, Bioretention",7500,4813.7
+"ML-1 RHE Project",33.782589,-118.319286,NA,NA,NA,0,"11/25/2024","Infiltration Well",1861550,0
+"Madison EH__GS project",33.875085,-118.368493,NA,NA,NA,2.01607,"4/7/2021","Green Street, Bioretention",37000,30000
+"Maine Avenue Complete Street Phase 1A",34.096447,-117.960474,NA,NA,NA,0,"3/8/2019","Green Street, Bioretention",3018466,0
+"Maine Avenue Complete Street Phase 1B",34.105008,-117.960581,NA,NA,NA,0,"3/5/2021","Green Street, Bioretention",0,0
+"Malibu Road Biofiltration ",34.0303092,-118.7057273,0.015,NA,0.001,NA,"4/24/2023","Green Street",NA,NA
+"Manchester Greenway",33.959217,-118.281999,1,3,0.18,21.38,"12/1/2015","Green Street, Biofiltration",850000,109440
+"Manhattan Beach Greenbelt Infiltration Project",33.8799,-118.4024,NA,NA,NA,163.634377,"2/20/2013","Regional Infiltration Gallery",777703,134986
+"Marcelin Drive Green Street",34.01071,-117.83156,NA,NA,NA,0,"9/1/2020","Green Street, Biofiltration",216000,2565
+"Marie Canyon Distributed BMP",34.035448,-118.709819,NA,NA,NA,0,"4/26/2023","Green Street - Biofiltration",NA,NA
+"Marie Canyon Treatment Facility",34.031103,-118.711017,NA,NA,NA,NA,"10/1/2007","Regional Treatment Facility",NA,NA
+"Marina del Rey Biofiltration in Parking Lot 10",33.98125,-118.459056,NA,NA,NA,7.655132,"10/24/2018","LID Retrofit, Biofiltration",174000,0
+"Marina del Rey Bioretention in Parking Lot 45",33.978833,-118.442972,NA,NA,NA,2.23107,"4/1/2020","LID Retrofit, Bioretention",180000,0
+"Marina del Rey Lloyd Taber Library Parking Lot Water Quality Enhancement Project",33.982659,-118.443449,NA,NA,NA,2.4631,"12/18/2017","Other (specify)",378000,46505.05
+"Marina del Rey Parking Lot 5 Water Quality Enhancement Project",33.982433,-118.44291,NA,NA,NA,13.065948,"1/29/2015","LID Retrofit, Biofiltration",6e+05,20800
+"Marina del Rey Parking Lot 7 Water Quality Enhancement Project",33.985182,-118.451707,NA,NA,NA,4.426425,"1/29/2015","LID Retrofit, Bioretention",370000,0
+"Marina del Rey Parking Lot 9 Water Quality Enhancement Project",33.982497,-118.456108,NA,NA,NA,6.920693,"12/5/2017","LID Retrofit, Biofiltration",1672000,20800
+"Marine Park Parking Lot",33.757599,-118.11997,NA,NA,NA,6.917549,"6/30/2014","LID Retrofit, Bioretention",0,10240
+"Market Place Drive at Neil Armstrong Street Filterra Tree Wells",34.037051,-118.09427,0.001,3,0.001,0.39,"6/30/2018","Green Street, Biofiltration",75000,3500
+"Marshall Community Park",34.076372,-118.10398,0.01,2.41,0.11,5.95,"11/30/2017","LID Retrofit, Bioretention",0,0
+"McCormick and Vineland Green Street Project",34.166015,-118.370549,1,31,0,0,"6/15/2021","Green Street, Bioretention",76500,3491
+"McGroarty Lift Station Project",34.096023,-118.1082506,0.003,0.07,0,0,"7/2/2021","LID Retrofit, Bioretention",5498.13,0
+"Median and Side Panel Turf Replacement Project",33.920774,-118.072589,NA,NA,NA,6.286775,"10/1/2018","Green Street, Bioretention",70000,48000
+"Meneely Alley Project",34.13538,-118.129955,0.14,0.14,0.01,0.89,"1/2/2019","Infiltration Well",71480,0
+"Mureau Rd at Mountain View Dr",34.152263,-118.68639,NA,NA,NA,33.818674,"10/25/2018","Green Street, Bioretention",2e+05,140687.6
+"Nogales Park Stormwater Capture Project",33.969308,-118.225031,0.8,31.7,0.75,0,"6/27/2024","Infiltration Well",5196000,0
+"Oak Station Parking Lot",33.94616,-118.019176,NA,NA,NA,1.573136,"5/1/2017","LID Retrofit, Bioretention",311909,1500
+"Orangewood Park Dry Wells and Pervious Pavement",34.064469,-117.947905,NA,NA,NA,31.96465,"1/2/2017","LID Retrofit, Bioretention",250000,0
+"Oxford Basin Multi-Use Enhancement Project",33.98553,-118.45523,NA,NA,NA,123.627791,"9/11/2016","Other (specify)",11600000,1390653.2
+"PVDN-RHR Detention Basin",33.77663,-118.344341,NA,NA,NA,1.022019,"6/16/2023","Regional Infiltration Gallery",85163,0
+"Palm Avenue Improvements Project",33.911096,-118.198808,NA,NA,NA,2.254482,"1/1/2020","Green Street, Bioretention",65000,1200
+"Paradise Cove Treatment Facility",34.020555,-118.786867,0.02,NA,NA,NA,"6/28/2010","Regional Treatment Facility",NA,NA
+"Paramount Blvd Green Street Project",33.834983,-118.159868,NA,NA,NA,0,"5/13/2020","Green Street, Bioretention",2050000,121881.48
+"Paramount Boulevard Urban Renovation Project",33.887226,-118.160014,NA,NA,NA,0,"1/2/2017","Green Street, Bioretention",0,0
+"Parking Lot Rehabilitation at Carlton Peterson Park",33.981884,-117.851851,NA,NA,NA,4.274021,"1/18/2016","LID Retrofit, Biofiltration",476362.87,34300
+"Parkway Basins Water Quality Improvement Project",34.058842,-117.969177,NA,NA,NA,1.391035,"9/9/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",34.062038,-117.976883,NA,NA,NA,0.974672,"5/1/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",33.963723,-118.073121,NA,NA,NA,0.335594,"4/11/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",33.96317,-118.07204,NA,NA,NA,0.039841,"3/15/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",33.964129,-118.077589,NA,NA,NA,0.370058,"3/15/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",33.96467,-118.077193,NA,NA,NA,0.113379,"2/23/2019","Green Street, Bioretention",4000,0
+"Parkway Basins Water Quality Improvement Project",33.964521,-118.077247,NA,NA,NA,0.235026,"2/23/2019","Green Street, Bioretention",4000,0
+"Pasadena Medical Office Building",34.163964,-118.150673,0.8,0.8,0.04,6.26,"1/2/2013","LID Retrofit, Bioretention",2750000,40000
+"Pasadena Water & Power Building at City Public Works Yards",34.162822,-118.157556,1,7,0.4,0.68,"1/2/2013","Other (specify)",1e+06,40000
+"Peck Reservoir Replacement Project",33.891453,-118.386725,NA,NA,NA,0.003061,"5/31/2024","Infiltration Well",1e+05,0
+"Perry Park _Slauson_GS project",33.869809,-118.370546,NA,NA,NA,0.488744,"4/7/2021","Green Street, Bioretention",21000,30000
+"Pico Rivera Regional Bikeway Project (CIP 21280)",33.99223298,-118.0899845,NA,NA,NA,0,"11/8/2024","Green Street, Biofiltration",6914615,0
+"Playhouse Park and Parking Lot",34.14503022,-118.1380329,1.04,1.04,0.25,0.46,"7/1/2022","Other (specify)",4250000,69003
+"Primrose Park",34.107596,-118.062142,0.02,1.02,0.07,1.43,"4/23/2022","LID Retrofit, Bioretention",2972058,0
+"Proposition 84",33.933364,-118.063856,NA,NA,NA,2.257208,"7/1/2017","LID Retrofit, Biofiltration",27160,0
+"Proposition 84",33.94414,-118.072684,NA,NA,NA,5.027944,"7/1/2017","LID Retrofit, Biofiltration",27160,0
+"Proposition 84 #1",33.808074,-118.163378,NA,NA,NA,4.303072,"6/30/2017","Green Street, Biofiltration",55375,2302
+"Proposition 84 #2",33.808,-118.163381,NA,NA,NA,4.303072,"6/30/2017","Green Street, Biofiltration",55375,2302
+"Proposition 84 (11077 Eve Ave)",33.930298,-118.19579,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (12308 Edgebrook)",33.90977,-118.182648,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (12337 Edgebrook)",33.908726,-118.182836,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (12501 Edgebrook)",33.907931,-118.18304,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (14335 Pioneer Blvd)",33.900835,-118.082673,NA,NA,NA,4.646354,"7/1/2017","Green Street, Biofiltration",27160,50000
+"Proposition 84 (2719 109th St)",33.936265,-118.223046,NA,NA,NA,1.043999,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (2734 E 110th St)",33.935288,-118.222641,NA,NA,NA,1.043999,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (3861 Lilita St)",33.93017,-118.196317,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (3957 Palm Ave)",33.911412,-118.199529,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (3965 Palm Ave)",33.911273,-118.199193,NA,NA,NA,0.96902,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (7740 Milton Ave)",33.971229,-118.039599,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7748 Newlin Ave)",33.970424,-118.04058,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,500
+"Proposition 84 (7751 Comstock)",33.971091,-118.038416,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7751 Milton Ave)",33.971108,-118.039599,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7907 Comstock)",33.969154,-118.038468,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7912 Comstock)",33.96908,-118.03847,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7913 Milton Ave)",33.969151,-118.039599,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7921 Newlin Ave)",33.969128,-118.040699,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7939 Comstock)",33.968757,-118.038479,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (7951 Comstock)",33.968489,-118.038912,NA,NA,NA,0.523272,"6/30/2017","Green Street, Bioretention",9035.09,750
+"Proposition 84 (Barlin and Cheyenne)",33.913909,-118.144007,NA,NA,NA,4.284326,"6/30/2017","Green Street, Biofiltration",27160,281.6
+"Proposition 84 (Bixler and Prichard)",33.908594,-118.151507,NA,NA,NA,4.287077,"6/30/2017","Green Street, Biofiltration",27160,281.6
+"Proposition 84 (Clark and Wright #2)",33.910316,-118.186387,NA,NA,NA,4.285102,"6/30/2017","Green Street, Biofiltration",16919.3,0
+"Proposition 84 (Clark and Wright)",33.910231,-118.186271,NA,NA,NA,4.285102,"6/30/2017","Green Street, Biofiltration",16919.3,0
+"Proposition 84 (Colorado and Alondra)",33.889571,-118.161544,NA,NA,NA,4.287077,"7/1/2017","Green Street, Biofiltration",0,750
+"Proposition 84 (Faust and Foster)",33.910055,-118.115066,NA,NA,NA,4.284326,"6/30/2017","Green Street, Biofiltration",27160,281.6
+"Proposition 84 (Fernwood and Santa Fe Springs)",33.928129,-118.229872,NA,NA,NA,4.285102,"6/30/2017","Green Street, Biofiltration",16919.3,0
+"Proposition 84 (Firestone Blvd)",33.933515,-118.11908,NA,NA,NA,18.389877,"6/30/2017","Green Street, Biofiltration",275547,281.6
+"Proposition 84 (Glady and Garfield)",33.932919,-118.167281,NA,NA,NA,4.174393,"7/1/2017","Green Street, Biofiltration",27160,10500
+"Proposition 84 (Imperial and Volunteer)",33.917235,-118.068937,NA,NA,NA,6.76522,"7/1/2017","Green Street, Biofiltration",27160,50000
+"Proposition 84 (Pangborn and Firestone)",33.930655,-118.113725,NA,NA,NA,4.284326,"6/30/2017","Green Street, Biofiltration",27160,281.6
+"Proposition 84 (Santa Fe and 108th St)",33.936884,-118.223123,NA,NA,NA,1.043999,"6/30/2017","Green Street, Bioretention",16919.3,0
+"Proposition 84 (State and Independence)",33.958262,-118.211545,NA,NA,NA,4.663241,"7/1/2017","Green Street, Biofiltration",27160,10500
+"Proposition 84 (Vermont and Alondra)",33.889493,-118.162867,NA,NA,NA,4.287077,"7/1/2017","Green Street, Biofiltration",0,750
+"Proposition 84 - #1",33.995295,-118.094577,NA,NA,NA,5.184853,"6/30/2017","Green Street, Biofiltration",55375.45,200
+"Proposition 84 - #2",33.99497,-118.094927,NA,NA,NA,5.184853,"6/30/2017","Green Street, Biofiltration",55375.45,200
+"Quincy Jones Green Alley Network",34.0153217,-118.2640149,0.41,4.3,3.6,8.35,"11/30/2022","Green Street, Biofiltration",1092348,32772
+"Ramona Gardens Rain Gardens",34.056958,-118.194391,1,7,0.37,33.13,"3/1/2013","Green Street, Bioretention",330000,56118
+"Ricardo Lara Linear Park",33.920783,-118.199292,NA,NA,NA,1.216977,"10/31/2015","LID Retrofit, Biofiltration",4949947,0
+"Riverdale Avenue Green Street Project",34.092143,-118.233472,1,14,0.32,94.78,"12/1/2014","Green Street, Biofiltration",5e+05,71877
+"Robinson Park Recreation Center",34.163964,-118.150673,0.25,0.25,0.001,0.19,"1/2/2019","Infiltration Well",7964259,0
+"Rolling Hills LA Harbor NBRR",33.756043,-118.341276,NA,NA,NA,2011.418246,"12/28/2012","Other (specify)",0,0
+"Rolling Hills Machado Lake NBRR",33.765073,-118.351208,NA,NA,NA,2455.427378,"12/28/2012","Other (specify)",0,0
+"Rolling Hills Santa Monica Bay NBRR",33.747695,-118.348167,NA,NA,NA,1023.263487,"12/28/2012","Other (specify)",0,0
+"Rondell Smart Park",34.146273,-118.697499,NA,NA,NA,17.90089,"11/21/2021","LID Retrofit, Biofiltration",3844145.25,0
+"Rosemead Blvd Safety Enhancements and Beautification Project",34.104568,-118.073627,0.001,7.2,0.41,15.18,"1/1/2017","Green Street, Bioretention",2e+07,0
+"San Fernando Regional Park",34.280317,-118.434416,1.37,942,24.87,808.59,"12/15/2023","Regional Infiltration Gallery",13152646,0
+"San Gabriel City Yard",34.09222,-118.08765,0.01,2.9,0.11,12.51,"1/2/2017","LID Retrofit, Bioretention",0,0
+"San Ramon Canyon Stormwater Flood Reduction Project",33.730345,-118.328869,NA,NA,NA,0,"10/15/2014","Other (specify)",15449194,40975.9
+"Savage Canyon Landfill",33.977925,-118.021075,NA,NA,NA,24.053819,"1/1/2018","LID Retrofit, Bioretention",350000,155000
+"Sigman St, et al",34.003956,-117.958266,NA,NA,NA,0.024296,"5/13/2015","Green Street, Bioretention",7500,4813.7
+"Sigman St, et al",34.001075,-117.957511,NA,NA,NA,0.028214,"5/13/2015","Green Street, Bioretention",7500,4813.7
+"Sigman St, et al",34.002069,-117.959698,NA,NA,NA,0.028214,"5/13/2015","Green Street, Bioretention",7500,4813.7
+"Signal Hill Dog Park",33.813625,-118.179582,NA,NA,NA,0.911311,"10/30/2018","LID Retrofit, Bioretention",46200,3975
+"Signal Hill Police Facility",33.80686,-118.172449,NA,NA,NA,14.485404,"1/16/2013","LID Retrofit, Bioretention",25000,7500
+"South Garfield Avenue Street Improvements",34.03514,-118.130243,0.03,2.8,0.03,1.37,"10/4/2018","Green Street, Bioretention",9e+05,0
+"St. Albans Project",34.11486,-118.09852,0,0,0,0,"12/19/2023","LID Retrofit, Bioretention",205390,0
+"Stoneman Avenue Parking Lot",34.096097,-118.125483,0.02,1.39,0.11,0.21,"12/14/2018","Infiltration Well",150000,9200
+"Street Improvements on Garfield",33.922485,-118.169101,NA,NA,NA,0,"9/14/2024","Green Street, Bioretention",150000,0
+"Street Improvements on Garfield and Imperial 1",33.930262,-118.17347,NA,NA,NA,0.138008,"5/2/2021","Infiltration Well",150000,3500
+"Street Improvements on Garfield and Imperial 2",33.93017,-118.167929,NA,NA,NA,0.138008,"5/2/2021","Infiltration Well",150000,3500
+"Susan Rubio Zocalo Park and Civic Plaza",34.08534631,-117.9614063,NA,NA,NA,0,"12/4/2024","LID Retrofit, Bioretention",11070000,0
+"Temple City Blvd Parking Lot",34.105287,-118.060862,0.01,0.23,0.01,1.04,"7/1/2017","LID Retrofit, Biofiltration",640000,0
+"The Nature Center",33.959599,-118.282047,1.38,3.1,0.06,2.45,"9/29/2021","Green Street, Biofiltration",450000,20250
+"The Signal Hill Library",33.796816,-118.169616,NA,NA,NA,2.333494,"8/7/2019","LID Retrofit, Bioretention",82200,11925
+"Torrance Circle Project",33.83768,-118.388782,NA,NA,NA,271.13004,"3/18/2020","Regional Infiltration Gallery",407000,48000
+"Town Center Plaza Improvement Project",33.946139,-118.084253,NA,NA,NA,0.030001,"6/16/2021","Other (specify)",175000,0
+"Tranbarger St, et al",33.989243,-117.876195,NA,NA,NA,0.025663,"10/26/2015","Green Street, Bioretention",7500,4313.7
+"Tranbarger St, et al",33.993906,-117.881318,NA,NA,NA,0.024908,"10/26/2015","Green Street, Bioretention",7500,4313.7
+"Tranbarger St, et al",33.993893,-117.881408,NA,NA,NA,0.025663,"10/26/2015","Green Street, Bioretention",7500,4313.7
+"Trancas Canyon Park BMP",34.039706,-118.845738,1.2,NA,NA,NA,"7/1/2010","Other - Biofiltration",NA,NA
+"Uptown Whittier Parking Lot",33.980105,-118.038312,NA,NA,NA,1.129078,"3/29/2022","LID Retrofit, Biofiltration",9200000,1500
+"Valencia Glen parking lot retrofit",34.395258,-118.547655,NA,NA,NA,5.886481,"4/15/15 7:00","LID Retrofit, Bioretention",97500,10318
+"Valley Boulevard",34.040907,-117.983724,NA,NA,NA,0.529151,"11/10/2014","Green Street, Bioretention",7500,3658.5
+"Valley Boulevard",34.041882,-117.985143,NA,NA,NA,0.529151,"11/10/2014","Green Street, Bioretention",7500,3658.5
+"Valley Boulevard",34.041938,-117.985229,NA,NA,NA,0.529151,"11/10/2014","Green Street, Bioretention",7500,3658.5
+"Valley Boulevard",34.04122,-117.984183,NA,NA,NA,0.529151,"11/10/2014","Green Street, Bioretention",7500,3658.5
+"Valley Boulevard",34.03649,-117.977303,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.035632,-117.976061,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.036599,-117.977459,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.03581,-117.976321,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.036121,-117.976772,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.036752,-117.977687,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Valley Boulevard",34.03885,-117.98075,NA,NA,NA,0.527356,"11/10/2014","Green Street, Bioretention",7500,3658.5
+"Valley Boulevard",34.03699,-117.978041,NA,NA,NA,0.599146,"11/10/2014","Green Street, Bioretention",7500,4236.2
+"Van Nuys Great Street",34.18676,-118.41172,1,3.1,0,0,"6/15/2021","Green Street, Bioretention",2549694,116310
+"Van Nuys Great Street",34.263901,-118.428834,1,100,0.16,241.89,"6/1/2018","Green Street, Biofiltration",3360000,529131
+"Verdugo parking lot",34.16287,-118.33879,0.1,0.95,0,0,"11/1/2014","Other (specify)",0,1000
+"Victory-Goodland Green Street",34.18676,-118.41172,1,126,0.13,22.79,"7/15/2021","Green Street, Bioretention",4234600,190560
+"Western/Riverside Drive Bioretention",34.16186,-118.306776,0.003,0.56,0.04,2.88,"11/8/2018","LID Retrofit, Bioretention",75000,1908
+"Whittier Greenway Trail Eastern Extension",33.946488,-118.019819,NA,NA,NA,0.497289,"4/19/2023","LID Retrofit, Bioretention",8124983,1500
+"Wilderness Park Restoration Project",33.93639576,-118.1006398,NA,NA,NA,0,"11/1/2020","Other (specify)",5430000,66870
+"Wildlife Road Storm Drain Improvements",34.013538,-118.79432,NA,NA,NA,NA,"6/30/2015","Other – Biofiltration",NA,NA
+"Willmore Heritage Garden Biofiltration Swale",33.775504,-118.200922,NA,NA,NA,2.856216,"6/30/2021","LID Retrofit, Biofiltration",4e+05,0
+"Willow Springs Park Wetland Restoration",33.807914,-118.177733,NA,NA,NA,24.405567,"6/30/2017","Other (specify)",0,10240
+"Wingate Park 2",34.093495,-117.864257,NA,NA,NA,0.927912,"1/2/2016","LID Retrofit, Biofiltration",250000,12300
+"Winter Canyon Distributed BMP",34.03651,-118.69826,NA,NA,NA,NA,"6/30/2015","Other – Biofiltration",NA,NA
+"Woodman Avenue Median Retrofit",34.217863,-118.431104,1,120,2.04,441.04,"2/14/2016","Green Street, Biofiltration",3400000,427282
+"Workman Mill Rd Phase II",34.043933,-117.993941,NA,NA,NA,13.626455,"1/27/2014","Green Street, Bioretention",23000,53137.6
