@@ -42,6 +42,7 @@ site_info <- read_csv("data/fib_loc_na.csv", show_col_types = FALSE) %>%
   filter(!is.na(lat)) %>%
   distinct(site_id, .keep_all = TRUE) %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE) %>%
+  
   st_join(read_sf("data/ca_counties/CA_Counties_TIGER2016.shp") %>%
             filter(NAME == "Los Angeles") %>% st_transform(4326),
           join = st_within) %>%
@@ -221,10 +222,10 @@ map_cols <- list(
   ws_fill = htb_colors$light_aqua
 )
 
-# --- Custom CSS for Heal the Bay Theme ---
+# --- Custom CSS for Heal the Bay Theme - IMPROVED COLOR DISTRIBUTION ---
 htb_css <- "
-/* Heal the Bay Custom Theme */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&family=Roboto:wght@400;500;700&display=swap');
+/* Heal the Bay Custom Theme - Enhanced Color Distribution */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
 :root {
   --htb-blue: #40B4E5;
@@ -239,19 +240,27 @@ htb_css <- "
   --htb-white: #FFFFFF;
   --htb-light-sunshine: #FEDB97;
   --htb-light-sunset: #F7A18E;
+  --htb-deep-sea: #0E4C90;
+  --htb-sand: #F3DAAB;
+  --htb-kelp: #546122;
+  --htb-garibaldi: #F47E48;
 }
 
 body {
-  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background-color: #f8f9fa;
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f5f7f9;
   color: var(--htb-coal-gray);
 }
 
-/* Navbar Styling */
+/* Navbar with Multi-Color Gradient */
 .navbar {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-ocean-blue) 100%) !important;
+  background: linear-gradient(135deg, 
+    var(--htb-deep-sea) 0%, 
+    var(--htb-ocean-blue) 25%, 
+    var(--htb-aqua) 75%, 
+    var(--htb-algae) 100%) !important;
   border: none !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   padding: 0.5rem 1rem;
 }
 
@@ -266,296 +275,401 @@ body {
 }
 
 .navbar .navbar-nav .nav-link {
-  color: rgba(255,255,255,0.9) !important;
-  font-weight: 500;
+  color: rgba(255,255,255,0.95) !important;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
   padding: 0.75rem 1.25rem !important;
-  transition: all 0.2s ease;
-  border-radius: 4px;
-  margin: 0 2px;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  margin: 0 4px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
 }
 
 .navbar .navbar-nav .nav-link:hover {
   color: var(--htb-white) !important;
-  background-color: rgba(255,255,255,0.15);
+  background-color: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
 }
 
 .navbar .navbar-nav .nav-link.active {
-  color: var(--htb-white) !important;
-  background-color: rgba(255,255,255,0.2);
+  color: var(--htb-coal-gray) !important;
+  background-color: var(--htb-sunshine);
   font-weight: 700;
+  box-shadow: 0 2px 8px rgba(252, 199, 85, 0.4);
 }
 
 /* Page Headers */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Roboto Slab', Georgia, serif;
+  font-family: 'Montserrat', Georgia, serif;
   color: var(--htb-coal-gray);
 }
 
 h2 {
-  color: var(--htb-ocean-blue);
-  border-bottom: 3px solid var(--htb-blue);
-  padding-bottom: 0.5rem;
+  color: var(--htb-deep-sea);
+  border-bottom: 4px solid transparent;
+  border-image: linear-gradient(90deg, var(--htb-algae), var(--htb-aqua), var(--htb-blue)) 1;
+  padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
 /* Cards and Panels */
 .card, .well, .panel {
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   background-color: var(--htb-white);
+  overflow: hidden;
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-aqua) 100%);
+  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%);
   color: var(--htb-white);
-  font-family: 'Roboto Slab', Georgia, serif;
+  font-family: 'Montserrat', Georgia, serif;
   font-weight: 700;
-  border-radius: 8px 8px 0 0 !important;
+  border-radius: 12px 12px 0 0 !important;
+  border-bottom: 3px solid var(--htb-kelp);
 }
 
 /* Sidebar Styling */
 .sidebar {
-  background-color: var(--htb-white);
-  border-radius: 8px;
+  background: linear-gradient(180deg, var(--htb-white) 0%, #f8fafb 100%);
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border-left: 4px solid var(--htb-algae);
 }
 
 /* Form Controls */
 .form-control, .selectize-input, .shiny-input-container select {
   border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  transition: all 0.3s ease;
+  background-color: #fafbfc;
 }
 
 .form-control:focus, .selectize-input.focus {
-  border-color: var(--htb-blue);
-  box-shadow: 0 0 0 3px rgba(64, 180, 229, 0.2);
+  border-color: var(--htb-aqua);
+  box-shadow: 0 0 0 4px rgba(0, 182, 182, 0.15);
   outline: none;
+  background-color: var(--htb-white);
 }
 
 .shiny-input-container label {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--htb-coal-gray);
   margin-bottom: 0.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
 }
 
-/* Buttons */
+/* Buttons - Varied Colors */
 .btn-primary {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-ocean-blue) 100%);
+  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%);
   border: none;
-  border-radius: 6px;
-  padding: 0.6rem 1.5rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 0.7rem 1.75rem;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 182, 182, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--htb-ocean-blue) 0%, #004590 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(144, 184, 62, 0.4);
 }
 
 .btn-default, .btn-secondary {
   background-color: var(--htb-white);
-  border: 2px solid var(--htb-blue);
-  color: var(--htb-blue);
-  border-radius: 6px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border: 2px solid var(--htb-aqua);
+  color: var(--htb-aqua);
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .btn-default:hover, .btn-secondary:hover {
-  background-color: var(--htb-blue);
+  background-color: var(--htb-aqua);
   color: var(--htb-white);
+  transform: translateY(-2px);
 }
 
-/* Checkbox and Radio Inputs */
+/* Checkbox and Radio Inputs with Color Variety */
 .checkbox-inline, .radio-inline {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.1rem;
   margin-right: 0.5rem;
   background-color: var(--htb-white);
-  border: 2px solid #e0e0e0;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  border: 2px solid #e8eaed;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .checkbox-inline:hover, .radio-inline:hover {
-  border-color: var(--htb-blue);
-  background-color: rgba(64, 180, 229, 0.05);
+  border-color: var(--htb-aqua);
+  background-color: rgba(0, 182, 182, 0.08);
 }
 
-/* Slider styling */
+/* Slider styling - Sunset theme */
 .irs--shiny .irs-bar {
-  background: linear-gradient(90deg, var(--htb-blue) 0%, var(--htb-aqua) 100%);
+  background: linear-gradient(90deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 50%, var(--htb-sunset-pink) 100%);
   border: none;
+  height: 8px;
 }
 
-.irs--shiny .irs-handle {
-  background-color: var(--htb-ocean-blue);
-  border: 3px solid var(--htb-white);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
-  background-color: var(--htb-ocean-blue);
+.irs--shiny .irs-line {
+  background: #e8eaed;
+  height: 8px;
   border-radius: 4px;
 }
 
-/* Tab styling */
+.irs--shiny .irs-handle {
+  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
+  border: 3px solid var(--htb-white);
+  box-shadow: 0 2px 8px rgba(242, 104, 89, 0.4);
+  width: 22px;
+  height: 22px;
+  top: 22px;
+}
+
+.irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
+  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-weight: 600;
+}
+
+/* Tab styling - Multi-color underlines */
 .nav-tabs {
-  border-bottom: 2px solid var(--htb-light-aqua);
+  border-bottom: 3px solid #e8eaed;
 }
 
 .nav-tabs .nav-link {
   color: var(--htb-coal-gray);
   border: none;
-  border-bottom: 3px solid transparent;
-  padding: 0.75rem 1.25rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  border-bottom: 4px solid transparent;
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.3s ease;
+  margin-bottom: -3px;
 }
 
 .nav-tabs .nav-link:hover {
-  color: var(--htb-blue);
+  color: var(--htb-aqua);
   border-bottom-color: var(--htb-light-aqua);
   background-color: transparent;
 }
 
 .nav-tabs .nav-link.active {
-  color: var(--htb-ocean-blue);
-  border-bottom: 3px solid var(--htb-blue);
+  color: var(--htb-kelp);
+  border-bottom: 4px solid var(--htb-algae);
   background-color: transparent;
   font-weight: 700;
 }
 
-/* DataTable Styling */
+/* DataTable Styling - Algae Theme */
 .dataTables_wrapper {
-  padding: 1rem;
+  padding: 1.25rem;
 }
 
 table.dataTable thead th {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-ocean-blue) 100%);
+  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
   color: var(--htb-white);
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
   border: none !important;
+  padding: 14px 12px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
 }
 
 table.dataTable tbody tr:nth-child(even) {
-  background-color: rgba(64, 180, 229, 0.05);
+  background-color: rgba(144, 184, 62, 0.06);
 }
 
 table.dataTable tbody tr:hover {
-  background-color: rgba(64, 180, 229, 0.1) !important;
+  background-color: rgba(144, 184, 62, 0.12) !important;
 }
 
 .dataTables_filter input {
   border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
 }
 
 .dataTables_filter input:focus {
-  border-color: var(--htb-blue);
+  border-color: var(--htb-algae);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(64, 180, 229, 0.2);
+  box-shadow: 0 0 0 4px rgba(144, 184, 62, 0.15);
 }
 
 /* Map container */
 .leaflet-container {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
-/* Welcome/Overview section */
+/* Welcome/Overview section - Multi-color gradient */
 .welcome-section {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-aqua) 100%);
+  background: linear-gradient(135deg, 
+    var(--htb-deep-sea) 0%, 
+    var(--htb-ocean-blue) 30%,
+    var(--htb-aqua) 70%,
+    var(--htb-algae) 100%);
   color: var(--htb-white);
-  padding: 2.5rem;
-  border-radius: 12px;
+  padding: 3rem;
+  border-radius: 16px;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 15px rgba(64, 180, 229, 0.3);
+  box-shadow: 0 8px 30px rgba(14, 76, 144, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .welcome-section h2 {
   color: var(--htb-white);
   border-bottom: none;
   margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Feature Cards - Each with Different Accent */
 .feature-card {
   background-color: var(--htb-white);
-  border-radius: 8px;
-  padding: 1.5rem;
+  border-radius: 12px;
+  padding: 1.75rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-left: 4px solid var(--htb-blue);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  border-top: 5px solid var(--htb-aqua);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--htb-light-aqua), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.feature-card:hover::after {
+  opacity: 1;
+}
+
+.feature-card.accent-algae {
+  border-top-color: var(--htb-algae);
+}
+
+.feature-card.accent-algae::after {
+  background: linear-gradient(90deg, transparent, var(--htb-light-algae), transparent);
+}
+
+.feature-card.accent-sunset {
+  border-top-color: var(--htb-sunset-pink);
+}
+
+.feature-card.accent-sunset::after {
+  background: linear-gradient(90deg, transparent, var(--htb-light-sunset), transparent);
 }
 
 .feature-card h4 {
-  color: var(--htb-ocean-blue);
-  margin-bottom: 0.5rem;
+  color: var(--htb-deep-sea);
+  margin-bottom: 0.75rem;
+  font-weight: 700;
 }
 
 .feature-card p {
-  color: var(--htb-coal-gray);
+  color: #5a6a7a;
   margin-bottom: 0;
+  line-height: 1.6;
 }
 
+/* Feature Icons - Varied Colors */
 .feature-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-aqua) 100%);
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-blue) 100%);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   color: var(--htb-white);
-  font-size: 1.25rem;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(0, 182, 182, 0.3);
+}
+
+.feature-icon.icon-algae {
+  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
+  box-shadow: 0 4px 12px rgba(144, 184, 62, 0.3);
+}
+
+.feature-icon.icon-sunset {
+  background: linear-gradient(135deg, var(--htb-garibaldi) 0%, var(--htb-sunset-pink) 100%);
+  box-shadow: 0 4px 12px rgba(242, 104, 89, 0.3);
 }
 
 /* Footer */
 .footer {
-  background-color: var(--htb-coal-gray);
+  background: linear-gradient(135deg, var(--htb-coal-gray) 0%, #1a252f 100%);
   color: var(--htb-white);
-  padding: 1.5rem;
+  padding: 2rem;
   margin-top: 2rem;
-  border-radius: 8px 8px 0 0;
+  border-radius: 12px 12px 0 0;
   text-align: center;
 }
 
-/* Download button */
+/* Download button - Sunshine theme */
 .btn-download {
-  background: linear-gradient(135deg, var(--htb-algae) 0%, #7aa832 100%);
+  background: linear-gradient(135deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 100%);
   border: none;
-  color: var(--htb-white);
-  padding: 0.6rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  color: var(--htb-coal-gray);
+  padding: 0.7rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(252, 199, 85, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn-download:hover {
-  background: linear-gradient(135deg, #7aa832 0%, #6a9528 100%);
-  transform: translateY(-1px);
-}
-
-/* Legend styling for map */
-.legend-title {
-  font-family: 'Roboto Slab', Georgia, serif;
-  font-weight: 700;
-  color: var(--htb-coal-gray);
-  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--htb-garibaldi) 0%, var(--htb-sunset-pink) 100%);
+  color: var(--htb-white);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(244, 126, 72, 0.5);
 }
 
 /* Responsive adjustments */
@@ -565,78 +679,115 @@ table.dataTable tbody tr:hover {
   }
   
   .welcome-section {
-    padding: 1.5rem;
+    padding: 1.75rem;
   }
   
   .feature-card {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 }
 
 /* Plot styling */
 .shiny-plot-output {
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  background: var(--htb-white);
+  padding: 1rem;
 }
 
-/* Info boxes */
+/* Info boxes - Different colors for variety */
 .info-box {
-  background-color: var(--htb-light-aqua);
-  border-left: 4px solid var(--htb-blue);
-  padding: 1rem 1.5rem;
-  border-radius: 0 8px 8px 0;
+  background: linear-gradient(135deg, rgba(0, 182, 182, 0.08) 0%, rgba(138, 207, 207, 0.12) 100%);
+  border-left: 5px solid var(--htb-aqua);
+  padding: 1.25rem 1.75rem;
+  border-radius: 0 12px 12px 0;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.info-box::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--htb-aqua), var(--htb-algae));
+  border-radius: 0 0 0 12px;
 }
 
 .info-box p {
   margin-bottom: 0;
   color: var(--htb-coal-gray);
+  line-height: 1.6;
 }
 
-/* Accent colors for different sections */
-.accent-algae {
+.info-box.accent-algae {
+  background: linear-gradient(135deg, rgba(144, 184, 62, 0.08) 0%, rgba(186, 207, 134, 0.12) 100%);
   border-left-color: var(--htb-algae);
 }
 
-.accent-sunset {
+.info-box.accent-algae::before {
+  background: linear-gradient(180deg, var(--htb-algae), var(--htb-kelp));
+}
+
+.info-box.accent-sunset {
+  background: linear-gradient(135deg, rgba(242, 104, 89, 0.08) 0%, rgba(247, 161, 142, 0.12) 100%);
   border-left-color: var(--htb-sunset-pink);
 }
 
-.accent-sunshine {
+.info-box.accent-sunset::before {
+  background: linear-gradient(180deg, var(--htb-garibaldi), var(--htb-sunset-pink));
+}
+
+.info-box.accent-sunshine {
+  background: linear-gradient(135deg, rgba(252, 199, 85, 0.12) 0%, rgba(254, 219, 151, 0.15) 100%);
   border-left-color: var(--htb-sunshine);
+}
+
+.info-box.accent-sunshine::before {
+  background: linear-gradient(180deg, var(--htb-sunshine), var(--htb-garibaldi));
 }
 
 /* Map Controls Panel */
 .map-controls-panel {
   max-height: calc(100vh - 200px);
   overflow-y: auto;
+  background: linear-gradient(180deg, var(--htb-white) 0%, #f8fafb 100%);
 }
 
 .map-controls-panel h4 {
-  font-size: 14px;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--htb-deep-sea);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--htb-light-aqua);
 }
 
 .map-controls-panel .checkbox label {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  margin: 4px 0;
+  padding: 10px 14px;
+  margin: 5px 0;
   background-color: #f8f9fa;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: all 0.25s ease;
   cursor: pointer;
+  border: 2px solid transparent;
 }
 
 .map-controls-panel .checkbox label:hover {
-  background-color: rgba(64, 180, 229, 0.1);
+  background-color: rgba(0, 182, 182, 0.1);
+  border-color: var(--htb-light-aqua);
 }
 
 .map-controls-panel .checkbox input:checked + span {
-  font-weight: 500;
-  color: var(--htb-ocean-blue);
+  font-weight: 600;
+  color: var(--htb-deep-sea);
 }
 
 /* Map Legend */
@@ -646,84 +797,88 @@ table.dataTable tbody tr:hover {
 
 /* Leaflet customizations */
 .leaflet-container {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Source Sans Pro', sans-serif;
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 8px;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.15);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  border-top: 4px solid var(--htb-aqua);
 }
 
 .leaflet-popup-content {
-  margin: 12px 16px;
-  font-family: 'Roboto', sans-serif;
+  margin: 14px 18px;
+  font-family: 'Source Sans Pro', sans-serif;
 }
 
 .leaflet-popup-tip {
-  box-shadow: 0 3px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
 }
 
 .leaflet-control-layers {
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12) !important;
   border: none !important;
 }
 
 .leaflet-control-layers-toggle {
-  width: 36px !important;
-  height: 36px !important;
+  width: 40px !important;
+  height: 40px !important;
 }
 
 .leaflet-control-scale-line {
   border-color: var(--htb-coal-gray) !important;
-  background: rgba(255,255,255,0.8) !important;
+  background: rgba(255,255,255,0.9) !important;
 }
 
 .leaflet-bar a {
-  border-radius: 4px !important;
+  border-radius: 6px !important;
   border: none !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
   color: var(--htb-coal-gray) !important;
 }
 
 .leaflet-bar a:hover {
-  background-color: var(--htb-light-aqua) !important;
+  background-color: var(--htb-light-algae) !important;
 }
 
 /* Select all / Clear all links */
 .map-controls-panel a {
-  color: var(--htb-blue);
+  color: var(--htb-aqua);
   text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .map-controls-panel a:hover {
-  color: var(--htb-ocean-blue);
+  color: var(--htb-algae);
   text-decoration: underline;
 }
 
 /* Selectize dropdown styling */
 .selectize-dropdown {
-  border: 2px solid var(--htb-blue) !important;
-  border-radius: 0 0 6px 6px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  border: 2px solid var(--htb-aqua) !important;
+  border-radius: 0 0 8px 8px !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
 }
 
 .selectize-dropdown .active {
-  background-color: rgba(64, 180, 229, 0.15) !important;
-  color: var(--htb-ocean-blue) !important;
+  background-color: rgba(144, 184, 62, 0.15) !important;
+  color: var(--htb-kelp) !important;
 }
 
 .selectize-input.focus {
-  border-color: var(--htb-blue) !important;
-  box-shadow: 0 0 0 3px rgba(64, 180, 229, 0.2) !important;
+  border-color: var(--htb-aqua) !important;
+  box-shadow: 0 0 0 4px rgba(0, 182, 182, 0.15) !important;
 }
 
 .selectize-input .item {
-  background: linear-gradient(135deg, var(--htb-blue) 0%, var(--htb-aqua) 100%) !important;
+  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%) !important;
   color: white !important;
   border: none !important;
-  border-radius: 4px !important;
-  padding: 2px 8px !important;
+  border-radius: 6px !important;
+  padding: 3px 10px !important;
+  font-weight: 500;
 }
 
 .selectize-input .item .remove {
@@ -733,24 +888,99 @@ table.dataTable tbody tr:hover {
 
 .selectize-input .item .remove:hover {
   color: white !important;
-  background: rgba(0,0,0,0.1) !important;
+  background: rgba(0,0,0,0.15) !important;
+}
+
+/* Stats bar - Multi-color segments */
+.stats-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+  background: var(--htb-white);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border-top: 4px solid transparent;
+  border-image: linear-gradient(90deg, var(--htb-algae), var(--htb-aqua), var(--htb-blue), var(--htb-sunset-pink)) 1;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0.5rem 1rem;
+  position: relative;
+}
+
+.stat-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #e0e0e0, transparent);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(135deg, var(--htb-deep-sea) 0%, var(--htb-aqua) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-item:nth-child(2) .stat-value {
+  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-item:nth-child(3) .stat-value {
+  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-item:nth-child(4) .stat-value {
+  background: linear-gradient(135deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6a7a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* Legend card styling */
+.legend-card {
+  background: linear-gradient(180deg, var(--htb-white) 0%, #fafbfc 100%);
+  border-top: 4px solid var(--htb-sunshine);
+}
+
+.legend-card h4 {
+  border-bottom-color: var(--htb-light-sunshine) !important;
 }
 "
 
 # --- Theme using bslib ---
 app_theme <- bs_theme(
-  
   version = 5,
-  bg = "#f8f9fa",
+  bg = "#f5f7f9",
   fg = "#263746",
-  primary = "#40B4E5",
-  secondary = "#00B6B6",
+  primary = "#00B6B6",
+  secondary = "#90B83E",
   success = "#90B83E",
-  info = "#8ACFCF",
+  info = "#40B4E5",
   warning = "#FCC755",
   danger = "#F26859",
-  base_font = font_google("Roboto"),
-  heading_font = font_google("Roboto Slab"),
+  base_font = font_google("Source Sans Pro"),
+  heading_font = font_google("Montserrat"),
   font_scale = 1.05
 )
 
@@ -793,9 +1023,7 @@ ui <- navbarPage(
                ),
                column(4,
                       div(class = "feature-card accent-algae",
-                          div(class = "feature-icon", 
-                              style = "background: linear-gradient(135deg, #90B83E 0%, #7aa832 100%);",
-                              icon("chart-line")),
+                          div(class = "feature-icon icon-algae", icon("chart-line")),
                           h4("Trend Analysis"),
                           p("Analyze water quality parameters over time with interactive 
                time series and seasonal pattern visualizations.")
@@ -803,9 +1031,7 @@ ui <- navbarPage(
                ),
                column(4,
                       div(class = "feature-card accent-sunset",
-                          div(class = "feature-icon",
-                              style = "background: linear-gradient(135deg, #F26859 0%, #d94d3d 100%);",
-                              icon("table")),
+                          div(class = "feature-icon icon-sunset", icon("table")),
                           h4("Data Explorer"),
                           p("Search, filter, and export raw water quality data for 
                your own analysis and research needs.")
@@ -825,21 +1051,27 @@ ui <- navbarPage(
   # Map Tab
   tabPanel("Map",
            fluidPage(
-             h2("Map View: Stormwater Projects & Monitoring Sites"),
-             div(class = "info-box", style = "margin-bottom: 1.5rem;",
-                 p("Explore stormwater capture projects and water quality monitoring sites 
-           across Los Angeles County. Use the filters to customize your view.")
+             # Header row
+             fluidRow(
+               column(12,
+                      h2("Map View: Stormwater Projects & Monitoring Sites"),
+                      div(class = "info-box accent-algae", style = "margin-bottom: 1.25rem;",
+                          p("Explore stormwater capture projects and water quality monitoring sites 
+                 across Los Angeles County. Use the filters to customize your view.")
+                      )
+               )
              ),
+             
              fluidRow(
                # Map controls sidebar
                column(3,
                       div(class = "map-controls-panel",
-                          style = "background: white; padding: 1.25rem; border-radius: 8px; 
-                       box-shadow: 0 2px 8px rgba(0,0,0,0.08);",
+                          style = "background: white; padding: 1.25rem; border-radius: 12px; 
+                       box-shadow: 0 4px 15px rgba(0,0,0,0.08);",
                           
                           # Layer toggles
-                          h4("Map Layers", style = "color: #005CB9; margin-bottom: 1rem; 
-                font-family: 'Roboto Slab', serif;"),
+                          h4("Map Layers", style = "color: #0E4C90; margin-bottom: 1rem; 
+                font-family: 'Montserrat', serif;"),
                           checkboxGroupInput("map_layers", NULL,
                                              choices = c(
                                                "Stormwater Projects",
@@ -858,8 +1090,8 @@ ui <- navbarPage(
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
                           # DAC Filter
-                          h4("DAC Filter (SB 535)", style = "color: #005CB9; margin-bottom: 0.75rem;
-                font-family: 'Roboto Slab', serif;"),
+                          h4("DAC Filter (SB 535)", style = "color: #0E4C90; margin-bottom: 0.75rem;
+                font-family: 'Montserrat', serif;"),
                           p("Filter disadvantaged communities by CES percentile:", 
                             style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
                           checkboxGroupInput("dac_percentile_filter", NULL,
@@ -887,8 +1119,8 @@ ui <- navbarPage(
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
                           # Project Type Filter
-                          h4("Project Type Filter", style = "color: #005CB9; margin-bottom: 0.75rem;
-                font-family: 'Roboto Slab', serif;"),
+                          h4("Project Type Filter", style = "color: #0E4C90; margin-bottom: 0.75rem;
+                font-family: 'Montserrat', serif;"),
                           p("Filter stormwater projects by type:", 
                             style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
                           checkboxGroupInput("project_type_filter", NULL,
@@ -924,97 +1156,104 @@ ui <- navbarPage(
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
                           # Watershed Filter
-                          h4("Watershed Filter", style = "color: #005CB9; margin-bottom: 0.75rem;
-                font-family: 'Roboto Slab', serif;"),
+                          h4("Watershed Filter", style = "color: #0E4C90; margin-bottom: 0.75rem;
+                font-family: 'Montserrat', serif;"),
                           uiOutput("watershed_filter_ui")
-                      ),
-                      
-                      # Legend in separate card below
-                      div(style = "background: white; padding: 1.25rem; border-radius: 8px; 
-                       box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 1rem;",
-                          h4("Legend", style = "color: #005CB9; margin-bottom: 1rem;
-                font-family: 'Roboto Slab', serif;"),
-                          div(class = "map-legend",
-                              tags$table(style = "width: 100%; font-size: 12px;",
-                                         tags$tr(
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = paste0("width: 12px; height: 12px; border-radius: 50%; 
-                          background-color: ", htb_colors$algae, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);")),
-                                                   "Stormwater"
-                                           ),
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = paste0("width: 12px; height: 12px; border-radius: 50%; 
-                          background-color: ", htb_colors$htb_blue, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);")),
-                                                   "Beach Sites"
-                                           )
-                                         ),
-                                         tags$tr(
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = paste0("width: 12px; height: 12px; border-radius: 50%; 
-                          background-color: ", htb_colors$sunset_pink, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);")),
-                                                   "River Sites"
-                                           ),
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = paste0("width: 12px; height: 12px; border-radius: 50%; 
-                          background-color: ", htb_colors$sunshine, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);")),
-                                                   "Precip Stations"
-                                           )
-                                         ),
-                                         tags$tr(
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = "width: 12px; height: 12px; border-radius: 50%; 
-                          background: linear-gradient(135deg, #d73027 0%, #fc8d59 100%); 
-                          display: inline-block; margin-right: 6px; border: 2px solid white; 
-                          box-shadow: 0 1px 2px rgba(0,0,0,0.2);"),
-                                                   "DAC Tracts"
-                                           ),
-                                           tags$td(style = "padding: 4px 0;",
-                                                   span(style = paste0("width: 12px; height: 12px; border: 2px solid ", 
-                                                                       htb_colors$ocean_blue, "; background-color: ", htb_colors$light_aqua, 
-                                                                       "; opacity: 0.7; display: inline-block; margin-right: 6px;")),
-                                                   "Watersheds"
-                                           )
-                                         )
-                              )
-                          ),
-                          # DAC color scale explanation
-                          div(style = "margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e0e0e0;",
-                              p("DAC Color Scale (CES Percentile):", 
-                                style = "font-size: 11px; color: #666; margin-bottom: 0.25rem;"),
-                              div(style = "display: flex; align-items: center; font-size: 10px;",
-                                  span("75%", style = "margin-right: 4px;"),
-                                  div(style = "flex: 1; height: 8px; border-radius: 4px;
-                            background: linear-gradient(to right, #fc8d59, #d73027);"),
-                                  span("100%", style = "margin-left: 4px;")
-                              )
-                          )
                       )
                ),
                
-               # Map display
+               # Map display column
                column(9,
-                      div(style = "background: white; padding: 0.5rem; border-radius: 8px; 
-                       box-shadow: 0 2px 8px rgba(0,0,0,0.08);",
-                          leafletOutput("map", height = "650px")
+                      # Legend bar above the map
+                      div(class = "legend-bar",
+                          style = "background: white; padding: 0.85rem 1.25rem; border-radius: 12px 12px 0 0; 
+                       box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
+                       border-bottom: 3px solid #FCC755;
+                       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;",
+                          
+                          # Legend title
+                          div(style = "display: flex; align-items: center; margin-right: 1.5rem;",
+                              tags$span(class = "legend-title", 
+                                        style = "font-family: 'Montserrat', sans-serif; font-weight: 700; 
+                                 color: #0E4C90; font-size: 13px; text-transform: uppercase; 
+                                 letter-spacing: 0.5px;",
+                                        icon("map-marker-alt", style = "margin-right: 6px;"), "Legend")
+                          ),
+                          
+                          # Legend items container
+                          div(style = "display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;",
+                              # Stormwater
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
+                          background-color: ", htb_colors$algae, "; display: inline-block; 
+                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
+                                  span("Stormwater", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # Beach Sites
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
+                          background-color: ", htb_colors$htb_blue, "; display: inline-block; 
+                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
+                                  span("Beach Sites", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # River Sites
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
+                          background-color: ", htb_colors$deep_sea, "; display: inline-block; 
+                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
+                                  span("River Sites", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # Precip Stations
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
+                          background-color: ", htb_colors$sunshine, "; display: inline-block; 
+                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
+                                  span("Precip", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # DAC Tracts with gradient indicator
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = "width: 14px; height: 14px; border-radius: 50%; 
+                          background: linear-gradient(135deg, #fc8d59 0%, #d73027 100%); 
+                          display: inline-block; margin-right: 6px; border: 2px solid white; 
+                          box-shadow: 0 1px 3px rgba(0,0,0,0.25);"),
+                                  span("DAC", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # Watersheds
+                              div(style = "display: flex; align-items: center;",
+                                  span(style = paste0("width: 14px; height: 14px; border: 2px solid ", 
+                                                      htb_colors$ocean_blue, "; background-color: ", htb_colors$light_aqua, 
+                                                      "; opacity: 0.9; display: inline-block; margin-right: 6px; border-radius: 3px;")),
+                                  span("Watersheds", style = "font-size: 12px; font-weight: 500; color: #444;")
+                              ),
+                              # DAC scale mini
+                              div(style = "display: flex; align-items: center; padding-left: 0.75rem; 
+                                   border-left: 1px solid #e0e0e0; margin-left: 0.5rem;",
+                                  span("DAC:", style = "font-size: 10px; color: #666; margin-right: 4px;"),
+                                  div(style = "width: 50px; height: 8px; border-radius: 4px;
+                            background: linear-gradient(to right, #fc8d59, #d73027);"),
+                                  span("75-100%", style = "font-size: 10px; color: #666; margin-left: 4px;")
+                              )
+                          )
                       ),
+                      
+                      # Map container
+                      div(style = "background: white; padding: 0.5rem; border-radius: 0 0 12px 12px; 
+                       box-shadow: 0 4px 20px rgba(0,0,0,0.1);",
+                          leafletOutput("map", height = "580px")
+                      ),
+                      
                       # Map stats bar
-                      div(style = "background: linear-gradient(135deg, #40B4E5 0%, #00B6B6 100%); 
-                       padding: 1rem 1.5rem; border-radius: 8px; margin-top: 1rem;
-                       display: flex; justify-content: space-around; color: white;",
-                          div(style = "text-align: center;",
+                      div(class = "stats-bar",
+                          div(class = "stat-item",
                               uiOutput("stat_projects")
                           ),
-                          div(style = "text-align: center;",
+                          div(class = "stat-item",
                               uiOutput("stat_dac")
                           ),
-                          div(style = "text-align: center;",
+                          div(class = "stat-item",
                               uiOutput("stat_monitoring")
                           ),
-                          div(style = "text-align: center;",
+                          div(class = "stat-item",
                               uiOutput("stat_volume")
                           )
                       )
@@ -1028,9 +1267,9 @@ ui <- navbarPage(
            sidebarLayout(
              sidebarPanel(
                width = 3,
-               style = "background-color: white; border-radius: 8px; 
-                 box-shadow: 0 2px 8px rgba(0,0,0,0.08);",
-               h4("Filter Options", style = "color: #005CB9; margin-bottom: 1.25rem;"),
+               style = "background-color: white; border-radius: 12px; 
+                 box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 4px solid #F26859;",
+               h4("Filter Options", style = "color: #0E4C90; margin-bottom: 1.25rem;"),
                selectInput("site_select", "Monitoring Site:", 
                            choices = unique(fib_long$location_name)),
                selectInput("param_select", "Parameter:",
@@ -1042,7 +1281,7 @@ ui <- navbarPage(
                            max = year(max(fib_long$date)),
                            value = c(year(min(fib_long$date)), year(max(fib_long$date))), 
                            sep = ""),
-               div(class = "info-box accent-algae", style = "margin-top: 1.5rem;",
+               div(class = "info-box accent-sunset", style = "margin-top: 1.5rem;",
                    p(HTML("<strong>Tip:</strong> Use the filters above to customize your 
                   view of water quality trends."))
                )
@@ -1075,8 +1314,8 @@ ui <- navbarPage(
                  p("Search and filter the complete dataset. Use the download button 
            to export data for your own analysis.")
              ),
-             div(style = "background: white; padding: 1.5rem; border-radius: 8px; 
-                   box-shadow: 0 2px 8px rgba(0,0,0,0.08);",
+             div(style = "background: white; padding: 1.5rem; border-radius: 12px; 
+                   box-shadow: 0 4px 15px rgba(0,0,0,0.08);",
                  DTOutput("data_table"),
                  br(),
                  downloadButton("download_data", "Download CSV", class = "btn-download")
@@ -1126,7 +1365,7 @@ server <- function(input, output, session) {
     
     tagList(
       div(style = "max-height: 200px; overflow-y: auto; padding: 0.5rem; 
-                   background: #f8f9fa; border-radius: 6px;",
+                   background: #f8f9fa; border-radius: 8px;",
           checkboxGroupInput("selected_watersheds", NULL,
                              choices = ws_names, 
                              selected = ws_names)
@@ -1175,12 +1414,12 @@ server <- function(input, output, session) {
                              selected = character(0))
   })
   
-  # Stats outputs for the map - now reactive to filters
+  # Stats outputs for the map - redesigned with new classes
   output$stat_projects <- renderUI({
     n_proj <- nrow(filtered_stormwater())
     div(
-      div(n_proj, style = "font-size: 24px; font-weight: bold;"),
-      div("Stormwater Projects", style = "font-size: 12px; opacity: 0.9;")
+      div(class = "stat-value", n_proj),
+      div(class = "stat-label", "Stormwater Projects")
     )
   })
   
@@ -1188,16 +1427,16 @@ server <- function(input, output, session) {
     n_dac <- nrow(filtered_dac())
     total_dac <- nrow(dac_pts)
     div(
-      div(paste0(n_dac, "/", total_dac), style = "font-size: 24px; font-weight: bold;"),
-      div("DAC Tracts", style = "font-size: 12px; opacity: 0.9;")
+      div(class = "stat-value", paste0(n_dac, "/", total_dac)),
+      div(class = "stat-label", "DAC Tracts")
     )
   })
   
   output$stat_monitoring <- renderUI({
     n_mon <- nrow(monitoring_sites_pts) + nrow(testing_sites_pts)
     div(
-      div(n_mon, style = "font-size: 24px; font-weight: bold;"),
-      div("Monitoring Sites", style = "font-size: 12px; opacity: 0.9;")
+      div(class = "stat-value", n_mon),
+      div(class = "stat-label", "Monitoring Sites")
     )
   })
   
@@ -1205,9 +1444,8 @@ server <- function(input, output, session) {
     proj_data <- filtered_stormwater()
     total_vol <- sum(proj_data$volume_addressed, na.rm = TRUE)
     div(
-      div(paste0(format(round(total_vol, 1), big.mark = ","), " ac-ft"), 
-          style = "font-size: 24px; font-weight: bold;"),
-      div("Volume Addressed", style = "font-size: 12px; opacity: 0.9;")
+      div(class = "stat-value", paste0(format(round(total_vol, 1), big.mark = ","))),
+      div(class = "stat-label", "Acre-ft Addressed")
     )
   })
   
@@ -1273,19 +1511,19 @@ server <- function(input, output, session) {
             fillOpacity = 0.7, 
             weight = 1,
             popup = ~paste0(
-              "<div style='font-family: Roboto, sans-serif; min-width: 220px;'>",
+              "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
               "<div style='background: linear-gradient(135deg, #d73027 0%, #fc8d59 100%); ",
-              "color: white; padding: 8px; margin: -12px -16px 8px -16px; border-radius: 8px 8px 0 0;'>",
-              "<strong>Disadvantaged Community</strong></div>",
+              "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
               "<table style='font-size: 12px; width: 100%;'>",
-              "<tr><td style='color: #666;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
-              "<tr><td style='color: #666;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
-              "<tr><td style='color: #666;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
-              "<tr><td style='color: #666;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
-              "<tr><td colspan='2' style='padding-top: 8px; border-top: 1px solid #e0e0e0;'></td></tr>",
-              "<tr><td style='color: #666;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
-              "<tr><td style='color: #666;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
-              "<tr><td style='color: #666;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
+              "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
               "</table>",
               "</div>"
             ),
@@ -1309,15 +1547,16 @@ server <- function(input, output, session) {
             fillOpacity = 0.85, 
             weight = 2,
             popup = ~paste0(
-              "<div style='font-family: Roboto, sans-serif; min-width: 200px;'>",
-              "<strong style='color: #005CB9; font-size: 14px;'>", name, "</strong>",
-              "<hr style='margin: 8px 0; border-color: #e0e0e0;'>",
+              "<div style='font-family: Source Sans Pro, sans-serif; min-width: 200px;'>",
+              "<div style='background: linear-gradient(135deg, #90B83E 0%, #546122 100%); ",
+              "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
               "<table style='font-size: 12px; width: 100%;'>",
-              "<tr><td style='color: #666;'>Type:</td><td style='text-align: right;'><b>", project_type_clean, "</b></td></tr>",
-              "<tr><td style='color: #666;'>Volume:</td><td style='text-align: right;'>", volume_fmt, "</td></tr>",
-              "<tr><td style='color: #666;'>Capital Cost:</td><td style='text-align: right;'>", capital_cost_fmt, "</td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Type:</td><td style='text-align: right;'><b>", project_type_clean, "</b></td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Volume:</td><td style='text-align: right;'>", volume_fmt, "</td></tr>",
+              "<tr><td style='color: #666; padding: 3px 0;'>Capital Cost:</td><td style='text-align: right;'>", capital_cost_fmt, "</td></tr>",
               ifelse(!is.na(completion_date), 
-                     paste0("<tr><td style='color: #666;'>Completed:</td><td style='text-align: right;'>", completion_date, "</td></tr>"),
+                     paste0("<tr><td style='color: #666; padding: 3px 0;'>Completed:</td><td style='text-align: right;'>", completion_date, "</td></tr>"),
                      ""),
               "</table>",
               "</div>"
@@ -1344,8 +1583,11 @@ server <- function(input, output, session) {
             fillOpacity = 0.85, 
             weight = 2,
             popup = ~paste0(
-              "<div style='font-family: Roboto, sans-serif;'>",
-              "<strong style='color: #005CB9;'>", location_name, "</strong>",
+              "<div style='font-family: Source Sans Pro, sans-serif;'>",
+              "<div style='background: linear-gradient(135deg, #40B4E5 0%, #005CB9 100%); ",
+              "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<strong style='font-family: Montserrat, sans-serif;'>", location_name, "</strong></div>",
+              "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Beach Monitoring Site</p>",
               "</div>"
             ),
             group = "Beach Monitoring Sites"
@@ -1362,13 +1604,15 @@ server <- function(input, output, session) {
             lng = ~lon, lat = ~lat,
             radius = 8, 
             color = "#FFFFFF",
-            fillColor = htb_colors$sunset_pink, 
+            fillColor = htb_colors$deep_sea, 
             fillOpacity = 0.85, 
             weight = 2,
             popup = ~paste0(
-              "<div style='font-family: Roboto, sans-serif;'>",
-              "<strong style='color: #005CB9;'>", name, "</strong><br>",
-              "<span style='font-size: 11px;'>Order in watershed: ", order_in_ws, "</span>",
+              "<div style='font-family: Source Sans Pro, sans-serif;'>",
+              "<div style='background: linear-gradient(135deg, #0E4C90 0%, #005CB9 100%); ",
+              "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
+              "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Order in watershed: ", order_in_ws, "</p>",
               "</div>"
             ),
             group = "River Monitoring Sites"
@@ -1389,8 +1633,11 @@ server <- function(input, output, session) {
             fillOpacity = 0.85, 
             weight = 2,
             popup = ~paste0(
-              "<div style='font-family: Roboto, sans-serif;'>",
-              "<strong style='color: #005CB9;'>", name, "</strong>",
+              "<div style='font-family: Source Sans Pro, sans-serif;'>",
+              "<div style='background: linear-gradient(135deg, #FCC755 0%, #F47E48 100%); ",
+              "color: #263746; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
+              "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Precipitation Station</p>",
               "</div>"
             ),
             group = "LA County Precip Stations"
@@ -1431,10 +1678,10 @@ server <- function(input, output, session) {
           label = ~LABEL,
           labelOptions = labelOptions(
             style = list(
-              "font-family" = "Roboto, sans-serif",
+              "font-family" = "Montserrat, sans-serif",
               "font-weight" = "bold",
-              "color" = "#005CB9",
-              "padding" = "4px 8px"
+              "color" = "#0E4C90",
+              "padding" = "6px 10px"
             )
           ),
           group = "Watershed Boundaries",
@@ -1445,15 +1692,18 @@ server <- function(input, output, session) {
             bringToFront = FALSE
           ),
           popup = ~paste0(
-            "<div style='font-family: Roboto, sans-serif;'>",
-            "<strong style='color: #005CB9; font-size: 14px;'>", LABEL, "</strong>",
+            "<div style='font-family: Source Sans Pro, sans-serif;'>",
+            "<div style='background: linear-gradient(135deg, #005CB9 0%, #8ACFCF 100%); ",
+            "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+            "<strong style='font-family: Montserrat, sans-serif;'>", LABEL, "</strong></div>",
+            "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Watershed Boundary</p>",
             "</div>"
           )
         )
     }
   })
   
-  # Trend plot with Heal the Bay styling
+  # Trend plot with varied brand colors
   output$trend_plot <- renderPlot({
     df <- fib_long %>%
       filter(location_name == input$site_select,
@@ -1462,23 +1712,25 @@ server <- function(input, output, session) {
     req(nrow(df) > 0)
     
     ggplot(df, aes(date, result)) +
-      geom_line(color = htb_colors$htb_blue, linewidth = 1) + 
-      geom_point(color = htb_colors$ocean_blue, size = 2.5) +
+      geom_line(color = htb_colors$aqua, linewidth = 1.2) + 
+      geom_point(color = htb_colors$deep_sea, size = 3, alpha = 0.8) +
       labs(x = "Date", y = "Result (MPN/100mL)", 
            title = paste("Water Quality at", input$site_select)) + 
       theme_minimal(base_size = 14) +
       theme(
         text = element_text(family = "sans"),
-        plot.title = element_text(color = htb_colors$ocean_blue, 
-                                  face = "bold", size = 16),
+        plot.title = element_text(color = htb_colors$deep_sea, 
+                                  face = "bold", size = 18),
         axis.title = element_text(color = htb_colors$coal_gray, face = "bold"),
         axis.text = element_text(color = htb_colors$coal_gray),
         panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(color = "#e0e0e0")
+        panel.grid.major = element_line(color = "#e8eaed"),
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
       )
   })
   
-  # Seasonal plot with Heal the Bay colors
+  # Seasonal plot with full brand color palette
   output$seasonal_plot <- renderPlot({
     df <- fib_long %>%
       filter(location_name == input$site_select,
@@ -1486,11 +1738,12 @@ server <- function(input, output, session) {
              between(year(date), input$year_range[1], input$year_range[2]))
     req(nrow(df) > 0)
     
+    # Using full brand palette for seasons
     seasonal_colors <- c(
-      "Winter" = htb_colors$ocean_blue,
+      "Winter" = htb_colors$deep_sea,
       "Spring" = htb_colors$algae,
       "Summer" = htb_colors$sunshine,
-      "Fall" = htb_colors$sunset_pink
+      "Fall" = htb_colors$garibaldi
     )
     
     df %>%
@@ -1510,13 +1763,15 @@ server <- function(input, output, session) {
       theme_minimal(base_size = 14) +
       theme(
         text = element_text(family = "sans"),
-        plot.title = element_text(color = htb_colors$ocean_blue, 
-                                  face = "bold", size = 16),
+        plot.title = element_text(color = htb_colors$deep_sea, 
+                                  face = "bold", size = 18),
         axis.title = element_text(color = htb_colors$coal_gray, face = "bold"),
         axis.text = element_text(color = htb_colors$coal_gray),
         panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_line(color = "#e0e0e0")
+        panel.grid.major.y = element_line(color = "#e8eaed"),
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
       )
   })
   
