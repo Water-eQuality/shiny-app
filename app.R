@@ -222,9 +222,9 @@ map_cols <- list(
   ws_fill = htb_colors$light_aqua
 )
 
-# --- Custom CSS for Heal the Bay Theme - IMPROVED COLOR DISTRIBUTION ---
+# --- Custom CSS for Heal the Bay Theme - CLEAN SOLID COLORS ---
 htb_css <- "
-/* Heal the Bay Custom Theme - Enhanced Color Distribution */
+/* Heal the Bay Custom Theme - Clean Solid Colors */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600&display=swap');
 
 :root {
@@ -252,16 +252,29 @@ body {
   color: var(--htb-coal-gray);
 }
 
-/* Navbar with Multi-Color Gradient */
-.navbar {
-  background: linear-gradient(135deg, 
-    var(--htb-deep-sea) 0%, 
-    var(--htb-ocean-blue) 25%, 
-    var(--htb-aqua) 75%, 
-    var(--htb-algae) 100%) !important;
+/* Navbar - Solid Color - COMPREHENSIVE FIX */
+.navbar, 
+.navbar-default, 
+.navbar-static-top, 
+.navbar.bg-primary,
+.navbar.navbar-expand-md,
+.navbar.navbar-light,
+.navbar.navbar-dark,
+nav.navbar {
+  background-color: #0E4C90 !important;
+  background: #0E4C90 !important;
   border: none !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   padding: 0.5rem 1rem;
+}
+
+.bg-primary, .navbar .bg-primary {
+  background-color: #0E4C90 !important;
+  background: #0E4C90 !important;
+}
+
+.navbar > .container-fluid {
+  background-color: #0E4C90 !important;
 }
 
 .navbar-brand {
@@ -275,11 +288,11 @@ body {
 }
 
 .navbar .navbar-nav .nav-link {
-  color: rgba(255,255,255,0.95) !important;
+  color: rgba(255,255,255,0.9) !important;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   padding: 0.75rem 1.25rem !important;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border-radius: 6px;
   margin: 0 4px;
   text-transform: uppercase;
@@ -289,15 +302,13 @@ body {
 
 .navbar .navbar-nav .nav-link:hover {
   color: var(--htb-white) !important;
-  background-color: rgba(255,255,255,0.2);
-  transform: translateY(-2px);
+  background-color: rgba(255,255,255,0.15);
 }
 
 .navbar .navbar-nav .nav-link.active {
   color: var(--htb-coal-gray) !important;
   background-color: var(--htb-sunshine);
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(252, 199, 85, 0.4);
 }
 
 /* Page Headers */
@@ -308,8 +319,7 @@ h1, h2, h3, h4, h5, h6 {
 
 h2 {
   color: var(--htb-deep-sea);
-  border-bottom: 4px solid transparent;
-  border-image: linear-gradient(90deg, var(--htb-algae), var(--htb-aqua), var(--htb-blue)) 1;
+  border-bottom: 4px solid var(--htb-aqua);
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   font-weight: 700;
@@ -319,26 +329,25 @@ h2 {
 .card, .well, .panel {
   border: none;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   background-color: var(--htb-white);
   overflow: hidden;
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%);
+  background-color: var(--htb-aqua);
   color: var(--htb-white);
   font-family: 'Montserrat', Georgia, serif;
   font-weight: 700;
   border-radius: 12px 12px 0 0 !important;
-  border-bottom: 3px solid var(--htb-kelp);
 }
 
 /* Sidebar Styling */
 .sidebar {
-  background: linear-gradient(180deg, var(--htb-white) 0%, #f8fafb 100%);
+  background-color: var(--htb-white);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   border-left: 4px solid var(--htb-algae);
 }
 
@@ -347,13 +356,13 @@ h2 {
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   padding: 0.6rem 0.85rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   background-color: #fafbfc;
 }
 
 .form-control:focus, .selectize-input.focus {
   border-color: var(--htb-aqua);
-  box-shadow: 0 0 0 4px rgba(0, 182, 182, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 182, 182, 0.12);
   outline: none;
   background-color: var(--htb-white);
 }
@@ -366,25 +375,22 @@ h2 {
   font-size: 0.9rem;
 }
 
-/* Buttons - Varied Colors */
+/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%);
+  background-color: var(--htb-aqua);
   border: none;
   border-radius: 8px;
   padding: 0.7rem 1.75rem;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 182, 182, 0.3);
+  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.85rem;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(144, 184, 62, 0.4);
+  background-color: var(--htb-ocean-blue);
 }
 
 .btn-default, .btn-secondary {
@@ -393,34 +399,33 @@ h2 {
   color: var(--htb-aqua);
   border-radius: 8px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-default:hover, .btn-secondary:hover {
   background-color: var(--htb-aqua);
   color: var(--htb-white);
-  transform: translateY(-2px);
 }
 
-/* Checkbox and Radio Inputs with Color Variety */
+/* Checkbox and Radio Inputs */
 .checkbox-inline, .radio-inline {
   padding: 0.6rem 1.1rem;
   margin-right: 0.5rem;
   background-color: var(--htb-white);
   border: 2px solid #e8eaed;
   border-radius: 25px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-weight: 500;
 }
 
 .checkbox-inline:hover, .radio-inline:hover {
   border-color: var(--htb-aqua);
-  background-color: rgba(0, 182, 182, 0.08);
+  background-color: rgba(0, 182, 182, 0.05);
 }
 
-/* Slider styling - Sunset theme */
+/* Slider styling */
 .irs--shiny .irs-bar {
-  background: linear-gradient(90deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 50%, var(--htb-sunset-pink) 100%);
+  background-color: var(--htb-sunset-pink);
   border: none;
   height: 8px;
 }
@@ -432,22 +437,22 @@ h2 {
 }
 
 .irs--shiny .irs-handle {
-  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
+  background-color: var(--htb-sunset-pink);
   border: 3px solid var(--htb-white);
-  box-shadow: 0 2px 8px rgba(242, 104, 89, 0.4);
+  box-shadow: 0 2px 6px rgba(242, 104, 89, 0.3);
   width: 22px;
   height: 22px;
   top: 22px;
 }
 
 .irs--shiny .irs-from, .irs--shiny .irs-to, .irs--shiny .irs-single {
-  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
+  background-color: var(--htb-sunset-pink);
   border-radius: 6px;
   padding: 3px 8px;
   font-weight: 600;
 }
 
-/* Tab styling - Multi-color underlines */
+/* Tab styling */
 .nav-tabs {
   border-bottom: 3px solid #e8eaed;
 }
@@ -459,7 +464,7 @@ h2 {
   padding: 0.85rem 1.5rem;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   margin-bottom: -3px;
 }
 
@@ -476,13 +481,13 @@ h2 {
   font-weight: 700;
 }
 
-/* DataTable Styling - Algae Theme */
+/* DataTable Styling */
 .dataTables_wrapper {
   padding: 1.25rem;
 }
 
 table.dataTable thead th {
-  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
+  background-color: var(--htb-algae);
   color: var(--htb-white);
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
@@ -510,97 +515,53 @@ table.dataTable tbody tr:hover {
 .dataTables_filter input:focus {
   border-color: var(--htb-algae);
   outline: none;
-  box-shadow: 0 0 0 4px rgba(144, 184, 62, 0.15);
+  box-shadow: 0 0 0 3px rgba(144, 184, 62, 0.12);
 }
 
 /* Map container */
 .leaflet-container {
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
 }
 
-/* Welcome/Overview section - Multi-color gradient */
+/* Welcome/Overview section */
 .welcome-section {
-  background: linear-gradient(135deg, 
-    var(--htb-deep-sea) 0%, 
-    var(--htb-ocean-blue) 30%,
-    var(--htb-aqua) 70%,
-    var(--htb-algae) 100%);
+  background-color: var(--htb-deep-sea);
   color: var(--htb-white);
   padding: 3rem;
   border-radius: 16px;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 30px rgba(14, 76, 144, 0.35);
-  position: relative;
-  overflow: hidden;
-}
-
-.welcome-section::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 60%;
-  height: 200%;
-  background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 70%);
-  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(14, 76, 144, 0.25);
 }
 
 .welcome-section h2 {
   color: var(--htb-white);
   border-bottom: none;
   margin-bottom: 1rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Feature Cards - Each with Different Accent */
+/* Feature Cards */
 .feature-card {
   background-color: var(--htb-white);
   border-radius: 12px;
   padding: 1.75rem;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
   border-top: 5px solid var(--htb-aqua);
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--htb-light-aqua), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-}
-
-.feature-card:hover::after {
-  opacity: 1;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
 .feature-card.accent-algae {
   border-top-color: var(--htb-algae);
 }
 
-.feature-card.accent-algae::after {
-  background: linear-gradient(90deg, transparent, var(--htb-light-algae), transparent);
-}
-
 .feature-card.accent-sunset {
   border-top-color: var(--htb-sunset-pink);
-}
-
-.feature-card.accent-sunset::after {
-  background: linear-gradient(90deg, transparent, var(--htb-light-sunset), transparent);
 }
 
 .feature-card h4 {
@@ -615,11 +576,11 @@ table.dataTable tbody tr:hover {
   line-height: 1.6;
 }
 
-/* Feature Icons - Varied Colors */
+/* Feature Icons */
 .feature-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-blue) 100%);
+  background-color: var(--htb-aqua);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -627,22 +588,19 @@ table.dataTable tbody tr:hover {
   margin-bottom: 1.25rem;
   color: var(--htb-white);
   font-size: 1.4rem;
-  box-shadow: 0 4px 12px rgba(0, 182, 182, 0.3);
 }
 
 .feature-icon.icon-algae {
-  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
-  box-shadow: 0 4px 12px rgba(144, 184, 62, 0.3);
+  background-color: var(--htb-algae);
 }
 
 .feature-icon.icon-sunset {
-  background: linear-gradient(135deg, var(--htb-garibaldi) 0%, var(--htb-sunset-pink) 100%);
-  box-shadow: 0 4px 12px rgba(242, 104, 89, 0.3);
+  background-color: var(--htb-sunset-pink);
 }
 
 /* Footer */
 .footer {
-  background: linear-gradient(135deg, var(--htb-coal-gray) 0%, #1a252f 100%);
+  background-color: var(--htb-coal-gray);
   color: var(--htb-white);
   padding: 2rem;
   margin-top: 2rem;
@@ -650,26 +608,23 @@ table.dataTable tbody tr:hover {
   text-align: center;
 }
 
-/* Download button - Sunshine theme */
+/* Download button */
 .btn-download {
-  background: linear-gradient(135deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 100%);
+  background-color: var(--htb-sunshine);
   border: none;
   color: var(--htb-coal-gray);
   padding: 0.7rem 1.75rem;
   border-radius: 8px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(252, 199, 85, 0.4);
+  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .btn-download:hover {
-  background: linear-gradient(135deg, var(--htb-garibaldi) 0%, var(--htb-sunset-pink) 100%);
+  background-color: var(--htb-garibaldi);
   color: var(--htb-white);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(244, 126, 72, 0.5);
 }
 
 /* Responsive adjustments */
@@ -691,30 +646,18 @@ table.dataTable tbody tr:hover {
 .shiny-plot-output {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   background: var(--htb-white);
   padding: 1rem;
 }
 
-/* Info boxes - Different colors for variety */
+/* Info boxes */
 .info-box {
-  background: linear-gradient(135deg, rgba(0, 182, 182, 0.08) 0%, rgba(138, 207, 207, 0.12) 100%);
+  background-color: rgba(0, 182, 182, 0.08);
   border-left: 5px solid var(--htb-aqua);
   padding: 1.25rem 1.75rem;
   border-radius: 0 12px 12px 0;
   margin-bottom: 1rem;
-  position: relative;
-}
-
-.info-box::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  background: linear-gradient(180deg, var(--htb-aqua), var(--htb-algae));
-  border-radius: 0 0 0 12px;
 }
 
 .info-box p {
@@ -724,37 +667,25 @@ table.dataTable tbody tr:hover {
 }
 
 .info-box.accent-algae {
-  background: linear-gradient(135deg, rgba(144, 184, 62, 0.08) 0%, rgba(186, 207, 134, 0.12) 100%);
+  background-color: rgba(144, 184, 62, 0.08);
   border-left-color: var(--htb-algae);
 }
 
-.info-box.accent-algae::before {
-  background: linear-gradient(180deg, var(--htb-algae), var(--htb-kelp));
-}
-
 .info-box.accent-sunset {
-  background: linear-gradient(135deg, rgba(242, 104, 89, 0.08) 0%, rgba(247, 161, 142, 0.12) 100%);
+  background-color: rgba(242, 104, 89, 0.08);
   border-left-color: var(--htb-sunset-pink);
 }
 
-.info-box.accent-sunset::before {
-  background: linear-gradient(180deg, var(--htb-garibaldi), var(--htb-sunset-pink));
-}
-
 .info-box.accent-sunshine {
-  background: linear-gradient(135deg, rgba(252, 199, 85, 0.12) 0%, rgba(254, 219, 151, 0.15) 100%);
+  background-color: rgba(252, 199, 85, 0.1);
   border-left-color: var(--htb-sunshine);
-}
-
-.info-box.accent-sunshine::before {
-  background: linear-gradient(180deg, var(--htb-sunshine), var(--htb-garibaldi));
 }
 
 /* Map Controls Panel */
 .map-controls-panel {
   max-height: calc(100vh - 200px);
   overflow-y: auto;
-  background: linear-gradient(180deg, var(--htb-white) 0%, #f8fafb 100%);
+  background-color: var(--htb-white);
 }
 
 .map-controls-panel h4 {
@@ -775,13 +706,13 @@ table.dataTable tbody tr:hover {
   margin: 5px 0;
   background-color: #f8f9fa;
   border-radius: 8px;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   border: 2px solid transparent;
 }
 
 .map-controls-panel .checkbox label:hover {
-  background-color: rgba(0, 182, 182, 0.1);
+  background-color: rgba(0, 182, 182, 0.08);
   border-color: var(--htb-light-aqua);
 }
 
@@ -802,7 +733,7 @@ table.dataTable tbody tr:hover {
 
 .leaflet-popup-content-wrapper {
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   border-top: 4px solid var(--htb-aqua);
 }
 
@@ -812,12 +743,12 @@ table.dataTable tbody tr:hover {
 }
 
 .leaflet-popup-tip {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .leaflet-control-layers {
   border-radius: 10px !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1) !important;
   border: none !important;
 }
 
@@ -834,7 +765,7 @@ table.dataTable tbody tr:hover {
 .leaflet-bar a {
   border-radius: 6px !important;
   border: none !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12) !important;
   color: var(--htb-coal-gray) !important;
 }
 
@@ -859,21 +790,21 @@ table.dataTable tbody tr:hover {
 .selectize-dropdown {
   border: 2px solid var(--htb-aqua) !important;
   border-radius: 0 0 8px 8px !important;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
 }
 
 .selectize-dropdown .active {
-  background-color: rgba(144, 184, 62, 0.15) !important;
+  background-color: rgba(144, 184, 62, 0.12) !important;
   color: var(--htb-kelp) !important;
 }
 
 .selectize-input.focus {
   border-color: var(--htb-aqua) !important;
-  box-shadow: 0 0 0 4px rgba(0, 182, 182, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(0, 182, 182, 0.12) !important;
 }
 
 .selectize-input .item {
-  background: linear-gradient(135deg, var(--htb-aqua) 0%, var(--htb-algae) 100%) !important;
+  background-color: var(--htb-aqua) !important;
   color: white !important;
   border: none !important;
   border-radius: 6px !important;
@@ -888,10 +819,10 @@ table.dataTable tbody tr:hover {
 
 .selectize-input .item .remove:hover {
   color: white !important;
-  background: rgba(0,0,0,0.15) !important;
+  background: rgba(0,0,0,0.1) !important;
 }
 
-/* Stats bar - Multi-color segments */
+/* Stats bar */
 .stats-bar {
   display: flex;
   justify-content: space-around;
@@ -899,9 +830,8 @@ table.dataTable tbody tr:hover {
   border-radius: 12px;
   margin-top: 1rem;
   background: var(--htb-white);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  border-top: 4px solid transparent;
-  border-image: linear-gradient(90deg, var(--htb-algae), var(--htb-aqua), var(--htb-blue), var(--htb-sunset-pink)) 1;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-top: 4px solid var(--htb-aqua);
 }
 
 .stat-item {
@@ -916,36 +846,27 @@ table.dataTable tbody tr:hover {
   right: 0;
   top: 20%;
   height: 60%;
-  width: 2px;
-  background: linear-gradient(180deg, transparent, #e0e0e0, transparent);
+  width: 1px;
+  background-color: #e0e0e0;
 }
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
-  background: linear-gradient(135deg, var(--htb-deep-sea) 0%, var(--htb-aqua) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--htb-deep-sea);
 }
 
 .stat-item:nth-child(2) .stat-value {
-  background: linear-gradient(135deg, var(--htb-sunset-pink) 0%, var(--htb-garibaldi) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--htb-sunset-pink);
 }
 
 .stat-item:nth-child(3) .stat-value {
-  background: linear-gradient(135deg, var(--htb-algae) 0%, var(--htb-kelp) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--htb-algae);
 }
 
 .stat-item:nth-child(4) .stat-value {
-  background: linear-gradient(135deg, var(--htb-sunshine) 0%, var(--htb-garibaldi) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--htb-garibaldi);
 }
 
 .stat-label {
@@ -959,7 +880,7 @@ table.dataTable tbody tr:hover {
 
 /* Legend card styling */
 .legend-card {
-  background: linear-gradient(180deg, var(--htb-white) 0%, #fafbfc 100%);
+  background-color: var(--htb-white);
   border-top: 4px solid var(--htb-sunshine);
 }
 
@@ -973,7 +894,7 @@ app_theme <- bs_theme(
   version = 5,
   bg = "#f5f7f9",
   fg = "#263746",
-  primary = "#00B6B6",
+  primary = "#0E4C90",
   secondary = "#90B83E",
   success = "#90B83E",
   info = "#40B4E5",
@@ -981,7 +902,10 @@ app_theme <- bs_theme(
   danger = "#F26859",
   base_font = font_google("Source Sans Pro"),
   heading_font = font_google("Montserrat"),
-  font_scale = 1.05
+  font_scale = 1.05,
+  "navbar-bg" = "#0E4C90",
+  "navbar-light-bg" = "#0E4C90",
+  "navbar-dark-bg" = "#0E4C90"
 )
 
 # --- UI ---
@@ -1167,8 +1091,8 @@ ui <- navbarPage(
                       # Legend bar above the map
                       div(class = "legend-bar",
                           style = "background: white; padding: 0.85rem 1.25rem; border-radius: 12px 12px 0 0; 
-                       box-shadow: 0 -2px 15px rgba(0,0,0,0.08);
-                       border-bottom: 3px solid #FCC755;
+                       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+                       border-top: 4px solid #FCC755;
                        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;",
                           
                           # Legend title
@@ -1210,10 +1134,10 @@ ui <- navbarPage(
                           margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
                                   span("Precip", style = "font-size: 12px; font-weight: 500; color: #444;")
                               ),
-                              # DAC Tracts with gradient indicator
+                              # DAC Tracts with solid indicator
                               div(style = "display: flex; align-items: center;",
                                   span(style = "width: 14px; height: 14px; border-radius: 50%; 
-                          background: linear-gradient(135deg, #fc8d59 0%, #d73027 100%); 
+                          background-color: #d73027; 
                           display: inline-block; margin-right: 6px; border: 2px solid white; 
                           box-shadow: 0 1px 3px rgba(0,0,0,0.25);"),
                                   span("DAC", style = "font-size: 12px; font-weight: 500; color: #444;")
@@ -1225,13 +1149,13 @@ ui <- navbarPage(
                                                       "; opacity: 0.9; display: inline-block; margin-right: 6px; border-radius: 3px;")),
                                   span("Watersheds", style = "font-size: 12px; font-weight: 500; color: #444;")
                               ),
-                              # DAC scale mini
+                              # DAC percentile indicator
                               div(style = "display: flex; align-items: center; padding-left: 0.75rem; 
                                    border-left: 1px solid #e0e0e0; margin-left: 0.5rem;",
-                                  span("DAC:", style = "font-size: 10px; color: #666; margin-right: 4px;"),
-                                  div(style = "width: 50px; height: 8px; border-radius: 4px;
-                            background: linear-gradient(to right, #fc8d59, #d73027);"),
-                                  span("75-100%", style = "font-size: 10px; color: #666; margin-left: 4px;")
+                                  span("DAC Percentile:", style = "font-size: 10px; color: #666; margin-right: 6px;"),
+                                  span("75%", style = "font-size: 10px; color: #fc8d59; font-weight: 600;"),
+                                  span(" → ", style = "font-size: 10px; color: #888;"),
+                                  span("100%", style = "font-size: 10px; color: #d73027; font-weight: 600;")
                               )
                           )
                       ),
@@ -1512,7 +1436,7 @@ server <- function(input, output, session) {
             weight = 1,
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
-              "<div style='background: linear-gradient(135deg, #d73027 0%, #fc8d59 100%); ",
+              "<div style='background-color: #d73027; ",
               "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
               "<table style='font-size: 12px; width: 100%;'>",
@@ -1548,7 +1472,7 @@ server <- function(input, output, session) {
             weight = 2,
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif; min-width: 200px;'>",
-              "<div style='background: linear-gradient(135deg, #90B83E 0%, #546122 100%); ",
+              "<div style='background-color: #90B83E; ",
               "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
               "<table style='font-size: 12px; width: 100%;'>",
@@ -1584,7 +1508,7 @@ server <- function(input, output, session) {
             weight = 2,
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif;'>",
-              "<div style='background: linear-gradient(135deg, #40B4E5 0%, #005CB9 100%); ",
+              "<div style='background-color: #40B4E5; ",
               "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>", location_name, "</strong></div>",
               "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Beach Monitoring Site</p>",
@@ -1609,7 +1533,7 @@ server <- function(input, output, session) {
             weight = 2,
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif;'>",
-              "<div style='background: linear-gradient(135deg, #0E4C90 0%, #005CB9 100%); ",
+              "<div style='background-color: #0E4C90; ",
               "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
               "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Order in watershed: ", order_in_ws, "</p>",
@@ -1634,7 +1558,7 @@ server <- function(input, output, session) {
             weight = 2,
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif;'>",
-              "<div style='background: linear-gradient(135deg, #FCC755 0%, #F47E48 100%); ",
+              "<div style='background-color: #FCC755; ",
               "color: #263746; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
               "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Precipitation Station</p>",
@@ -1693,7 +1617,7 @@ server <- function(input, output, session) {
           ),
           popup = ~paste0(
             "<div style='font-family: Source Sans Pro, sans-serif;'>",
-            "<div style='background: linear-gradient(135deg, #005CB9 0%, #8ACFCF 100%); ",
+            "<div style='background-color: #005CB9; ",
             "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
             "<strong style='font-family: Montserrat, sans-serif;'>", LABEL, "</strong></div>",
             "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Watershed Boundary</p>",
