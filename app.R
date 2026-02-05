@@ -887,6 +887,39 @@ table.dataTable tbody tr:hover {
 .legend-card h4 {
   border-bottom-color: var(--htb-light-sunshine) !important;
 }
+
+/* Data Sources Page Styling */
+.data-source-card {
+  background-color: var(--htb-white);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.data-source-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.data-source-card h3 {
+  color: var(--htb-deep-sea);
+  font-weight: 700;
+}
+
+.citation-box {
+  background-color: rgba(144, 184, 62, 0.08);
+  border-left: 4px solid var(--htb-algae);
+  padding: 1rem 1.25rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+}
+
+.citation-box code {
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
 "
 
 # --- Theme using bslib ---
@@ -1230,19 +1263,107 @@ ui <- navbarPage(
            )
   ),
   
-  # Data Table Tab
-  tabPanel("Data Table",
+  # Data Sources Tab (Replaces Data Table)
+  tabPanel("Data Sources",
            fluidPage(
-             h2("Raw Data Viewer"),
-             div(class = "info-box accent-sunshine", style = "margin-bottom: 1.5rem;",
-                 p("Search and filter the complete dataset. Use the download button 
-           to export data for your own analysis.")
+             h2("Data Sources & Citations"),
+             div(class = "info-box", style = "margin-bottom: 1.5rem;",
+                 p(HTML("This dashboard integrates data from multiple authoritative sources. 
+                        Below you'll find citation information, data descriptions, and links 
+                        to the original sources for transparency and reproducibility."))
              ),
-             div(style = "background: white; padding: 1.5rem; border-radius: 12px; 
-                   box-shadow: 0 4px 15px rgba(0,0,0,0.08);",
-                 DTOutput("data_table"),
-                 br(),
-                 downloadButton("download_data", "Download CSV", class = "btn-download")
+             
+             # Beach Monitoring Data Citation Card
+             fluidRow(
+               column(12,
+                      div(class = "feature-card", 
+                          style = "border-top: 5px solid #40B4E5;",
+                          
+                          # Header with icon
+                          div(style = "display: flex; align-items: center; margin-bottom: 1rem;",
+                              div(class = "feature-icon", 
+                                  style = "margin-bottom: 0; margin-right: 1rem;",
+                                  icon("water")),
+                              div(
+                                h3("Beach Water Quality Monitoring Data", 
+                                   style = "margin: 0; color: #0E4C90; font-size: 1.4rem;"),
+                                p("Fecal Indicator Bacteria (FIB) Measurements", 
+                                  style = "margin: 0; color: #666; font-size: 0.9rem;")
+                              )
+                          ),
+                          
+                          hr(style = "border-color: #e8eaed; margin: 1rem 0;"),
+                          
+                          # Data description
+                          h4("Description", style = "color: #263746; font-size: 1rem; margin-bottom: 0.5rem;"),
+                          p("This dataset contains fecal indicator bacteria (FIB) monitoring results 
+                            from beaches across Los Angeles County. The data includes measurements of 
+                            Total Coliform, Fecal Coliform, and Enterococcus—key indicators used to 
+                            assess recreational water quality and protect public health.",
+                            style = "color: #555; line-height: 1.6;"),
+                          
+                          # Key details in a styled list
+                          div(style = "background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;",
+                              h4("Dataset Details", style = "color: #263746; font-size: 1rem; margin-bottom: 0.75rem;"),
+                              tags$table(style = "width: 100%; font-size: 0.9rem;",
+                                         tags$tr(
+                                           tags$td(style = "padding: 0.4rem 0; color: #666; width: 140px;", "Parameters:"),
+                                           tags$td(style = "padding: 0.4rem 0;", "Total Coliform, Fecal Coliform, Enterococcus (MPN/100mL)")
+                                         ),
+                                         tags$tr(
+                                           tags$td(style = "padding: 0.4rem 0; color: #666;", "Geographic Scope:"),
+                                           tags$td(style = "padding: 0.4rem 0;", "Los Angeles County coastal beaches")
+                                         ),
+                                         tags$tr(
+                                           tags$td(style = "padding: 0.4rem 0; color: #666;", "Update Frequency:"),
+                                           tags$td(style = "padding: 0.4rem 0;", "Weekly during beach season")
+                                         ),
+                                         tags$tr(
+                                           tags$td(style = "padding: 0.4rem 0; color: #666;", "Data Provider:"),
+                                           tags$td(style = "padding: 0.4rem 0;", "California State Water Resources Control Board")
+                                         )
+                              )
+                          ),
+                          
+                          # Citation box
+                          div(class = "info-box accent-algae", style = "margin: 1rem 0;",
+                              h4("Suggested Citation", style = "color: #263746; font-size: 0.95rem; margin-bottom: 0.5rem;"),
+                              p(HTML("California State Water Resources Control Board. <em>Beach Water Quality 
+                                     Monitoring Data.</em> Retrieved from California Beach Monitoring Program. 
+                                     Available at: <a href='https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html' 
+                                     target='_blank' style='color: #005CB9;'>https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html</a>"),
+                                style = "margin: 0; font-size: 0.9rem; line-height: 1.6;")
+                          ),
+                          
+                          # Action buttons
+                          div(style = "display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;",
+                              tags$a(href = "https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html",
+                                     target = "_blank",
+                                     class = "btn btn-primary",
+                                     style = "display: inline-flex; align-items: center;",
+                                     icon("external-link-alt", style = "margin-right: 8px;"),
+                                     "Visit Data Source"),
+                              downloadButton("download_fib_data", "Download Dataset", 
+                                             class = "btn-download",
+                                             style = "display: inline-flex; align-items: center;")
+                          )
+                      )
+               )
+             ),
+             
+             # Placeholder for future data sources
+             fluidRow(
+               column(12,
+                      div(style = "margin-top: 2rem; padding: 2rem; background: #f8f9fa; 
+                                  border-radius: 12px; border: 2px dashed #d0d0d0; text-align: center;",
+                          icon("plus-circle", style = "font-size: 2rem; color: #aaa; margin-bottom: 0.5rem;"),
+                          h4("Additional Data Sources Coming Soon", 
+                             style = "color: #888; font-weight: 500; margin-bottom: 0.25rem;"),
+                          p("Citations for stormwater projects, DAC data, and watershed boundaries 
+                            will be added here.",
+                            style = "color: #aaa; font-size: 0.9rem; margin: 0;")
+                      )
+               )
              )
            )
   )
@@ -1699,21 +1820,9 @@ server <- function(input, output, session) {
       )
   })
   
-  # Data table
-  output$data_table <- renderDT({
-    datatable(fib_data, 
-              options = list(
-                pageLength = 10, 
-                scrollX = TRUE,
-                dom = 'Bfrtip',
-                searching = TRUE
-              ),
-              class = 'stripe hover',
-              rownames = FALSE)
-  })
-  
-  output$download_data <- downloadHandler(
-    filename = function() paste0("htb_fib_data_", Sys.Date(), ".csv"),
+  # Download handler for FIB data (renamed from download_data)
+  output$download_fib_data <- downloadHandler(
+    filename = function() paste0("htb_beach_monitoring_data_", Sys.Date(), ".csv"),
     content = function(file) {
       write_csv(fib_data, file)
     }
