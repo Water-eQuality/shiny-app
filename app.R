@@ -187,37 +187,46 @@ lausd_parcels <- tryCatch({
   # If CRS missing, set BEFORE transform (LAUSD is typically EPSG:3310)
   if (is.na(sf::st_crs(x))) sf::st_crs(x) <- 3310
   
-  # Clean geometry
+  # Clean geometry - do NOT cast yet, preserve original types
   x <- x %>%
     sf::st_make_valid() %>%
     dplyr::filter(!sf::st_is_empty(sf::st_geometry(.))) %>%
     sf::st_transform(4326) %>%
     sf::st_zm(drop = TRUE, what = "ZM")
   
-  # HUGE performance win: crop to LA County bbox (pad slightly)
+  # Drop all columns except LABEL early
+  x <- x %>% dplyr::select(LABEL)
+  
+  # Crop to LA County bbox
   if (!is.null(la_county_geo) && nrow(la_county_geo) > 0) {
     bb <- sf::st_bbox(la_county_geo)
     bb <- bb + c(xmin = -0.05, ymin = -0.05, xmax = 0.05, ymax = 0.05)
     x <- sf::st_crop(x, bb)
   }
   
-  # HUGE performance win: simplify geometry for leaflet
+  # Simplify
   x <- sf::st_simplify(x, dTolerance = 0.0003, preserveTopology = TRUE)
   
-  # Make sure leaflet gets polygons
-  x <- sf::st_cast(x, "MULTIPOLYGON", warn = FALSE)
+  # Make valid again after simplify, then extract polygons
+  x <- x %>%
+    sf::st_make_valid() %>%
+    dplyr::filter(!sf::st_is_empty(sf::st_geometry(.)))
   
+  # Only cast rows that are already polygon types - skip collections
+  geom_types <- sf::st_geometry_type(x)
+  x <- x[geom_types %in% c("POLYGON", "MULTIPOLYGON"), ]
+  
+  if (nrow(x) > 0) {
+    x <- sf::st_cast(x, "MULTIPOLYGON", warn = FALSE)
+  }
+  
+  # Explode geometry collections, keep only polygon types, recast
   x
 }, error = function(e) {
   message("LAUSD parcels load failed: ", e$message)
   NULL
 })
 
-lausd_priority_tiers <- c("High Priority", "Medium Priority", "Lower Priority")
-lausd_school_types   <- c(
-  "High School", "Middle School", "Elementary / Primary",
-  "Magnet School", "Closed Campus", "Other / Admin"
-)
 
 
 # --- Spatial point data ---
@@ -1137,28 +1146,6 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # LAUSD Filter
-                          h4("LAUSD School Parcels", style = "color: #0E4C90; margin-bottom: 0.75rem;
-                font-family: 'Montserrat', serif;"),
-                          p("Recommended stormwater capture sites at LAUSD campuses:",
-                            style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
-                          checkboxGroupInput("lausd_priority_filter", "Priority Tier:",
-                                             choices  = c("High Priority", "Medium Priority", "Lower Priority"),
-                                             selected = c("High Priority", "Medium Priority", "Lower Priority")),
-                          checkboxGroupInput("lausd_type_filter", "School Type:",
-                                             choices  = c("High School", "Middle School",
-                                                          "Elementary / Primary", "Magnet School",
-                                                          "Closed Campus", "Other / Admin"),
-                                             selected = c("High School", "Middle School",
-                                                          "Elementary / Primary", "Magnet School")),
-                          div(style = "margin-top: 0.5rem;",
-                              actionLink("select_all_lausd", "Select All",
-                                         style = "font-size: 12px; margin-right: 10px;"),
-                              actionLink("clear_all_lausd", "Clear All",
-                                         style = "font-size: 12px;")
-                          ),
-                          
-                          hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
                           # DAC Filter
                           h4("DAC Filter (SB 535)", style = "color: #0E4C90; margin-bottom: 0.75rem;
@@ -1518,53 +1505,11 @@ server <- function(input, output, session) {
       filter(percentile_bin %in% selected_pctls)
   })
   
-  # Reactive filtered LAUSD parcels
-  # Reactive filtered LAUSD parcels
+  # Reactive LAUSD parcels (no filters - show all loaded parcels)
   filtered_lausd <- reactive({
-    if (is.null(lausd_parcels)) return(NULL)
-    
-    selected_tiers <- input$lausd_priority_filter
-    selected_types <- input$lausd_type_filter
-    
-    # Start from the raw object
-    df <- lausd_parcels
-    
-    # ---- Ensure derived columns exist (your object currently does NOT have these) ----
-    if (!("priority_tier" %in% names(df))) {
-      df <- df %>%
-        mutate(
-          priority_tier = case_when(
-            MEAN >= 5   ~ "High Priority",
-            MEAN >= 2.5 ~ "Medium Priority",
-            TRUE        ~ "Lower Priority"
-          )
-        )
-    }
-    
-    if (!("school_type_clean" %in% names(df))) {
-      df <- df %>%
-        mutate(
-          school_type_clean = case_when(
-            str_detect(MPD_DESC, "High School")                        ~ "High School",
-            str_detect(MPD_DESC, "Middle School")                      ~ "Middle School",
-            str_detect(MPD_DESC, "Elementary|Primary|Early Education") ~ "Elementary / Primary",
-            str_detect(MPD_DESC, "Magnet")                             ~ "Magnet School",
-            str_detect(MPD_DESC, "Closed")                             ~ "Closed Campus",
-            TRUE                                                       ~ "Other / Admin"
-          )
-        )
-    }
-    
-    # If nothing selected, return empty sf (but DON'T crash)
-    if (is.null(selected_tiers) || length(selected_tiers) == 0) return(df[0, ])
-    if (is.null(selected_types) || length(selected_types) == 0) return(df[0, ])
-    
-    df %>%
-      dplyr::filter(
-        priority_tier %in% selected_tiers,
-        school_type_clean %in% selected_types
-      )
+    lausd_parcels  # return as-is; NULL handled downstream
   })
+  
   
   # dynamic watershed filter UI
   output$watershed_filter_ui <- renderUI({
@@ -1732,9 +1677,7 @@ server <- function(input, output, session) {
       input$map_bounds,               # <- ensures leaflet output is ready
       input$map_layers,
       input$project_type_filter,
-      input$dac_percentile_filter,
-      input$lausd_priority_filter,
-      input$lausd_type_filter
+      input$dac_percentile_filter
     ),
     {
       req(input$map_bounds)  # ✅ map exists in browser now
@@ -1796,7 +1739,7 @@ server <- function(input, output, session) {
         }
       }
       
-      # ---- LAUSD Parcels (SHAPE ONLY: no popup, non-interactive) ----
+      # ---- LAUSD Parcels (interactive: click to see school name) ----
       if (show("LAUSD School Parcels") && !is.null(lausd_parcels) && nrow(lausd_parcels) > 0) {
         
         lausd_data <- filtered_lausd()
@@ -1810,10 +1753,24 @@ server <- function(input, output, session) {
               color = "#F47E48",
               weight = 1,
               opacity = 0.9,
-              fill = FALSE,
+              fillOpacity = 0.35,
               smoothFactor = 0.5,
               group = "LAUSD School Parcels",
-              options = pathOptions(interactive = FALSE)
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 180px;'>",
+                "<div style='background-color: #F47E48; color: white; padding: 10px; ",
+                "margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>LAUSD School Parcel</strong></div>",
+                "<p style='margin: 0; padding-top: 4px; color: #263746; font-size: 13px;'>",
+                "<b>", LABEL, "</b></p>",
+                "</div>"
+              ),
+              highlightOptions = highlightOptions(
+                weight = 3,
+                color = "#263746",
+                fillOpacity = 0.6,
+                bringToFront = TRUE
+              )
             )
         }
       }
