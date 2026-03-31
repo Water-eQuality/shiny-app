@@ -165,6 +165,7 @@ dac_pts <- dac_data %>%
   validate_latlon(lat = "lat", lon = "lon") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
+
 # Get unique DAC categories for filtering
 dac_categories <- sort(unique(dac_data$dac_category_short))
 
@@ -228,6 +229,50 @@ lausd_parcels <- tryCatch({
 })
 
 
+# --- Load Park Polygons ---
+park_polygons <- tryCatch({
+  
+  Sys.setenv(SHAPE_RESTORE_SHX = "YES")
+  
+  x <- sf::read_sf("data/park_polygons/park_polygons.shp")
+  
+  # Assign CA Albers (EPSG:3310, meters) — no CRS in file
+  if (is.na(sf::st_crs(x))) sf::st_crs(x) <- 3310
+  
+  x <- x %>%
+    # Fix validity BEFORE any casting or transforming
+    sf::st_buffer(0) %>%                    
+    sf::st_make_valid() %>%
+    dplyr::filter(!sf::st_is_empty(sf::st_geometry(.))) %>%
+    sf::st_transform(4326) %>%
+    sf::st_zm(drop = TRUE, what = "ZM") %>%
+    # Fix again after transform
+    sf::st_make_valid() %>%
+    dplyr::filter(!sf::st_is_empty(sf::st_geometry(.))) %>%
+    sf::st_simplify(dTolerance = 0.0003, preserveTopology = TRUE) %>%
+    sf::st_make_valid() %>%
+    dplyr::filter(!sf::st_is_empty(sf::st_geometry(.)))
+  
+  # Safe cast: only touch polygon types, skip anything else
+  geom_types <- sf::st_geometry_type(x)
+  x <- x[geom_types %in% c("POLYGON", "MULTIPOLYGON"), ]
+  
+  # Cast row by row to avoid one bad geometry killing the whole layer
+  x <- tryCatch(
+    sf::st_cast(x, "MULTIPOLYGON", warn = FALSE),
+    error = function(e) {
+      message("st_cast failed, returning as-is: ", e$message)
+      x
+    }
+  )
+  
+  message("Park polygons loaded: ", nrow(x), " features")
+  x
+  
+}, error = function(e) {
+  message("Park polygons load failed: ", e$message)
+  NULL
+})
 
 # --- Spatial point data ---
 
@@ -1004,20 +1049,26 @@ table.dataTable tbody tr:hover {
   font-weight: 700;
 }
 
-.citation-box {
-  background-color: rgba(144, 184, 62, 0.08);
-  border-left: 4px solid var(--htb-algae);
-  padding: 1rem 1.25rem;
-  border-radius: 0 8px 8px 0;
-  font-size: 0.9rem;
-}
-
 .citation-box code {
   background: transparent;
   color: inherit;
   font-size: inherit;
 }
-"
+
+/* Collapsible filter panels */
+details > summary {
+  user-select: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] > summary span {
+  transform: rotate(180deg);
+  display: inline-block;
+}
+" 
 
 # --- Theme using bslib ---
 app_theme <- bs_theme(
@@ -1122,14 +1173,14 @@ ui <- navbarPage(
                column(3,
                       div(class = "map-controls-panel",
                           style = "background: white; padding: 1.25rem; border-radius: 12px; 
-                       box-shadow: 0 4px 15px rgba(0,0,0,0.08);",
+               box-shadow: 0 4px 15px rgba(0,0,0,0.08);",
                           
-                          # Layer toggles
                           h4("Map Layers", style = "color: #0E4C90; margin-bottom: 1rem; 
-                font-family: 'Montserrat', serif;"),
+          font-family: 'Montserrat', serif;"),
                           checkboxGroupInput("map_layers", NULL,
                                              choices = c(
                                                "Stormwater Projects",
+                                               "Park Polygons",
                                                "LAUSD School Parcels",
                                                "Disadvantaged Communities",
                                                "Beach Monitoring Sites",
@@ -1139,6 +1190,7 @@ ui <- navbarPage(
                                              ),
                                              selected = c(
                                                "Stormwater Projects",
+                                               "Park Polygons",
                                                "LAUSD School Parcels",
                                                "Disadvantaged Communities",
                                                "Watershed Boundaries"
@@ -1146,160 +1198,243 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          
-                          # DAC Filter
-                          h4("DAC Filter (SB 535)", style = "color: #0E4C90; margin-bottom: 0.75rem;
-                font-family: 'Montserrat', serif;"),
-                          p("Filter disadvantaged communities by CES percentile:", 
-                            style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
-                          checkboxGroupInput("dac_percentile_filter", NULL,
-                                             choices = c(
-                                               "95-100% (Highest)",
-                                               "90-95%",
-                                               "85-90%",
-                                               "80-85%",
-                                               "75-80%"
-                                             ),
-                                             selected = c(
-                                               "95-100% (Highest)",
-                                               "90-95%",
-                                               "85-90%",
-                                               "80-85%",
-                                               "75-80%"
-                                             )),
-                          div(style = "margin-top: 0.5rem;",
-                              actionLink("select_all_dac", "Select All", 
-                                         style = "font-size: 12px; margin-right: 10px;"),
-                              actionLink("clear_all_dac", "Clear All", 
-                                         style = "font-size: 12px;")
+                          # --- DAC Filter (collapsible) ---
+                          tags$details(
+                            tags$summary(
+                              style = "cursor: pointer; font-size: 13px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: 1px;
+                   font-family: 'Montserrat', sans-serif; color: #0E4C90;
+                   padding: 0.5rem 0; list-style: none;
+                   display: flex; align-items: center; justify-content: space-between;",
+                              "DAC Filter (SB 535)",
+                              tags$span(style = "font-size: 16px; color: #00B6B6;", HTML("&#9660;"))
+                            ),
+                            div(style = "padding-top: 0.75rem;",
+                                div(class = "info-box accent-sunset", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
+                                    p(HTML("<strong>About this filter:</strong> Disadvantaged communities are identified 
+                        using <strong>CalEnviroScreen 4.0</strong> scores, developed by the California 
+                        Office of Environmental Health Hazard Assessment (OEHHA). Under <strong>SB 535</strong>, 
+                        CalEPA designates these communities based on geographic, socioeconomic, public 
+                        health, and environmental hazard criteria. Higher percentiles indicate greater 
+                        cumulative pollution burden."),
+                                      style = "margin: 0; font-size: 11px; line-height: 1.5;")
+                                ),
+                                p("Filter by CES 4.0 percentile:", 
+                                  style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
+                                checkboxGroupInput("dac_percentile_filter", NULL,
+                                                   choices = c(
+                                                     "95-100% (Highest)",
+                                                     "90-95%",
+                                                     "85-90%",
+                                                     "80-85%",
+                                                     "75-80%"
+                                                   ),
+                                                   selected = c(
+                                                     "95-100% (Highest)",
+                                                     "90-95%",
+                                                     "85-90%",
+                                                     "80-85%",
+                                                     "75-80%"
+                                                   )),
+                                div(style = "margin-top: 0.25rem;",
+                                    actionLink("select_all_dac", "Select All", 
+                                               style = "font-size: 12px; margin-right: 10px;"),
+                                    actionLink("clear_all_dac", "Clear All", 
+                                               style = "font-size: 12px;")
+                                )
+                            )
                           ),
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # Project Type Filter
-                          h4("Project Type Filter", style = "color: #0E4C90; margin-bottom: 0.75rem;
-                font-family: 'Montserrat', serif;"),
-                          p("Filter stormwater projects by type:", 
-                            style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
-                          checkboxGroupInput("project_type_filter", NULL,
-                                             choices = c(
-                                               "Green Street",
-                                               "LID/Bioretention", 
-                                               "Infiltration Well",
-                                               "Regional Infiltration",
-                                               "Treatment Facility",
-                                               "Biofiltration",
-                                               "Diversion",
-                                               "Detention",
-                                               "Other"
-                                             ),
-                                             selected = c(
-                                               "Green Street",
-                                               "LID/Bioretention", 
-                                               "Infiltration Well",
-                                               "Regional Infiltration",
-                                               "Treatment Facility",
-                                               "Biofiltration",
-                                               "Diversion",
-                                               "Detention",
-                                               "Other"
-                                             )),
-                          div(style = "margin-top: 0.5rem;",
-                              actionLink("select_all_types", "Select All", 
-                                         style = "font-size: 12px; margin-right: 10px;"),
-                              actionLink("clear_all_types", "Clear All", 
-                                         style = "font-size: 12px;")
+                          # --- Project Type Filter (collapsible) ---
+                          tags$details(
+                            tags$summary(
+                              style = "cursor: pointer; font-size: 13px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: 1px;
+                   font-family: 'Montserrat', sans-serif; color: #0E4C90;
+                   padding: 0.5rem 0; list-style: none;
+                   display: flex; align-items: center; justify-content: space-between;",
+                              "Project Type Filter",
+                              tags$span(style = "font-size: 16px; color: #00B6B6;", HTML("&#9660;"))
+                            ),
+                            div(style = "padding-top: 0.75rem;",
+                                div(class = "info-box accent-algae", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
+                                    p(HTML("<strong>About this filter:</strong> Stormwater capture projects are categorized 
+                        by infrastructure type. Projects range from small-scale <strong>green streets</strong> 
+                        and <strong>bioretention</strong> cells to large <strong>regional infiltration</strong> 
+                        facilities and <strong>treatment systems</strong>. Each type captures, treats, or 
+                        diverts stormwater runoff to reduce pollution and replenish groundwater."),
+                                      style = "margin: 0; font-size: 11px; line-height: 1.5;")
+                                ),
+                                p("Filter stormwater projects by type:", 
+                                  style = "font-size: 12px; color: #666; margin-bottom: 0.5rem;"),
+                                checkboxGroupInput("project_type_filter", NULL,
+                                                   choices = c(
+                                                     "Green Street",
+                                                     "LID/Bioretention",
+                                                     "Infiltration Well",
+                                                     "Regional Infiltration",
+                                                     "Treatment Facility",
+                                                     "Biofiltration",
+                                                     "Diversion",
+                                                     "Detention",
+                                                     "Other"
+                                                   ),
+                                                   selected = c(
+                                                     "Green Street",
+                                                     "LID/Bioretention",
+                                                     "Infiltration Well",
+                                                     "Regional Infiltration",
+                                                     "Treatment Facility",
+                                                     "Biofiltration",
+                                                     "Diversion",
+                                                     "Detention",
+                                                     "Other"
+                                                   )),
+                                div(style = "margin-top: 0.25rem;",
+                                    actionLink("select_all_types", "Select All", 
+                                               style = "font-size: 12px; margin-right: 10px;"),
+                                    actionLink("clear_all_types", "Clear All", 
+                                               style = "font-size: 12px;")
+                                )
+                            )
                           ),
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # Watershed Filter
-                          h4("Watershed Filter", style = "color: #0E4C90; margin-bottom: 0.75rem;
-                font-family: 'Montserrat', serif;"),
-                          uiOutput("watershed_filter_ui")
+                          # --- Watershed Filter (collapsible) ---
+                          tags$details(
+                            tags$summary(
+                              style = "cursor: pointer; font-size: 13px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: 1px;
+                   font-family: 'Montserrat', sans-serif; color: #0E4C90;
+                   padding: 0.5rem 0; list-style: none;
+                   display: flex; align-items: center; justify-content: space-between;",
+                              "Watershed Filter",
+                              tags$span(style = "font-size: 16px; color: #00B6B6;", HTML("&#9660;"))
+                            ),
+                            div(style = "padding-top: 0.75rem;",
+                                div(class = "info-box", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
+                                    p(HTML("<strong>About this filter:</strong> Watersheds define the land area that drains 
+                        to a common outlet. LA County spans multiple major watersheds including the 
+                        <strong>LA River</strong>, <strong>Ballona Creek</strong>, and <strong>San Gabriel River</strong> 
+                        systems. Filtering by watershed helps identify which stormwater projects and 
+                        monitoring sites fall within a given drainage area."),
+                                      style = "margin: 0; font-size: 11px; line-height: 1.5;")
+                                ),
+                                uiOutput("watershed_filter_ui")
+                            )
+                          )
                       )
                ),
                
                # Map display column
                column(9,
                       # Legend bar above the map
-                      div(class = "legend-bar",
-                          style = "background: white; padding: 0.85rem 1.25rem; border-radius: 12px 12px 0 0; 
-                       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-                       border-top: 4px solid #FCC755;
-                       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;",
-                          
-                          # Legend title
-                          div(style = "display: flex; align-items: center; margin-right: 1.5rem;",
-                              tags$span(class = "legend-title", 
-                                        style = "font-family: 'Montserrat', sans-serif; font-weight: 700; 
-                                 color: #0E4C90; font-size: 13px; text-transform: uppercase; 
-                                 letter-spacing: 0.5px;",
-                                        icon("map-marker-alt", style = "margin-right: 6px;"), "Legend")
-                          ),
-                          
-                          # Legend items container
-                          div(style = "display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;",
-                              # Stormwater
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
-                          background-color: ", htb_colors$algae, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
-                                  span("Stormwater", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # LAUSD Parcels
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = "width: 14px; height: 14px; border-radius: 3px;
-                          background-color: #F47E48; display: inline-block;
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);"),
-                                  span("LAUSD Parcels", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # Beach Sites
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
-                          background-color: ", htb_colors$htb_blue, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
-                                  span("Beach Sites", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # River Sites
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
-                          background-color: ", htb_colors$deep_sea, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
-                                  span("River Sites", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # Precip Stations
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = paste0("width: 14px; height: 14px; border-radius: 50%; 
-                          background-color: ", htb_colors$sunshine, "; display: inline-block; 
-                          margin-right: 6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.25);")),
-                                  span("Precip", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # DAC Tracts
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = "width: 14px; height: 14px; border-radius: 50%; 
-                          background-color: #d73027; 
-                          display: inline-block; margin-right: 6px; border: 2px solid white; 
-                          box-shadow: 0 1px 3px rgba(0,0,0,0.25);"),
-                                  span("DAC", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # Watersheds
-                              div(style = "display: flex; align-items: center;",
-                                  span(style = paste0("width: 14px; height: 14px; border: 2px solid ", 
-                                                      htb_colors$ocean_blue, "; background-color: ", htb_colors$light_aqua, 
-                                                      "; opacity: 0.9; display: inline-block; margin-right: 6px; border-radius: 3px;")),
-                                  span("Watersheds", style = "font-size: 12px; font-weight: 500; color: #444;")
-                              ),
-                              # DAC percentile indicator
-                              div(style = "display: flex; align-items: center; padding-left: 0.75rem; 
-                                   border-left: 1px solid #e0e0e0; margin-left: 0.5rem;",
-                                  span("DAC Percentile:", style = "font-size: 10px; color: #666; margin-right: 6px;"),
-                                  span("75%", style = "font-size: 10px; color: #fc8d59; font-weight: 600;"),
-                                  span(" -> ", style = "font-size: 10px; color: #888;"),
-                                  span("100%", style = "font-size: 10px; color: #d73027; font-weight: 600;")
-                              )
-                          )
-                      ),
+                      div(
+                        style = "background: white; padding: 1rem 1.5rem; border-radius: 12px 12px 0 0;
+           box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-top: 4px solid #FCC755;",
+                        
+                        div(style = "font-family: 'Montserrat', sans-serif; font-weight: 700; color: #0E4C90;
+               font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+               margin-bottom: 0.75rem;",
+                            icon("map-marker-alt", style = "margin-right: 6px;"), "Legend"
+                        ),
+                        
+                        div(style = "display: flex; flex-wrap: wrap; gap: 0.6rem;",
+                            
+                            # Point layers
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = paste0("width: 16px; height: 16px; border-radius: 50%;
+               background-color: ", htb_colors$algae, "; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;")),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "Stormwater"),
+                                  div(style = "font-size: 10px; color: #888;", "Capture projects")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = "width: 16px; height: 16px; border-radius: 3px;
+               background-color: #F47E48; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;"),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "LAUSD"),
+                                  div(style = "font-size: 10px; color: #888;", "School parcels")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = paste0("width: 16px; height: 16px; border-radius: 50%;
+               background-color: ", htb_colors$htb_blue, "; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;")),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "Beach Sites"),
+                                  div(style = "font-size: 10px; color: #888;", "FIB monitoring")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = paste0("width: 16px; height: 16px; border-radius: 50%;
+               background-color: ", htb_colors$deep_sea, "; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;")),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "River Sites"),
+                                  div(style = "font-size: 10px; color: #888;", "FIB monitoring")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = paste0("width: 16px; height: 16px; border-radius: 50%;
+               background-color: ", htb_colors$sunshine, "; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;")),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "Precip"),
+                                  div(style = "font-size: 10px; color: #888;", "Rain stations")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = "width: 16px; height: 16px; border-radius: 3px;
+               background-color: #2ca25f; display: inline-block;
+               border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;"),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "Parks"),
+                                  div(style = "font-size: 10px; color: #888;", "LA County parks")
+                                )
+                            ),
+                            
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = paste0("width: 16px; height: 16px; border: 2px solid ",
+                                                    htb_colors$ocean_blue, "; background-color: ", htb_colors$light_aqua,
+                                                    "; display: inline-block; border-radius: 3px; flex-shrink: 0;")),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "Watersheds"),
+                                  div(style = "font-size: 10px; color: #888;", "Drainage boundaries")
+                                )
+                            ),
+                            
+                            # DAC gradient pill
+                            div(style = "display: flex; align-items: center; background: #f8f9fa;
+                   border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
+                                span(style = "width: 32px; height: 16px; border-radius: 4px; flex-shrink: 0;
+               background: linear-gradient(to right, #fc8d59, #d73027);
+               border: 1px solid #ccc; display: inline-block;"),
+                                div(
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "DAC"),
+                                  div(style = "font-size: 10px; color: #888;", "75% to 100% CES")
+                                )
+                            )
+                        )
+                      ), 
                       
                       # Map container
                       div(style = "background: white; padding: 0.5rem; border-radius: 0 0 12px 12px; 
@@ -1510,6 +1645,108 @@ server <- function(input, output, session) {
     lausd_parcels  # return as-is; NULL handled downstream
   })
   
+  # --- Watershed-aware stat reactives ---
+  stormwater_in_ws <- reactive({
+    proj <- filtered_stormwater()
+    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) return(proj)
+    
+    selected_ws <- input$selected_watersheds
+    if (is.null(selected_ws) || length(selected_ws) == 0) return(proj[0, ])
+    
+    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
+    if (nrow(ws_filtered) == 0) return(proj[0, ])
+    
+    tryCatch(
+      proj[st_within(proj, st_union(ws_filtered), sparse = FALSE)[, 1], ],
+      error = function(e) proj
+    )
+  })
+  
+  dac_in_ws <- reactive({
+    d <- filtered_dac()
+    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) return(d)
+    
+    selected_ws <- input$selected_watersheds
+    if (is.null(selected_ws) || length(selected_ws) == 0) return(d[0, ])
+    
+    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
+    if (nrow(ws_filtered) == 0) return(d[0, ])
+    
+    tryCatch(
+      d[st_within(d, st_union(ws_filtered), sparse = FALSE)[, 1], ],
+      error = function(e) d
+    )
+  })
+  
+  monitoring_in_ws <- reactive({
+    beach <- monitoring_sites_pts
+    river <- testing_sites_pts
+    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) {
+      return(list(beach = beach, river = river))
+    }
+    
+    selected_ws <- input$selected_watersheds
+    if (is.null(selected_ws) || length(selected_ws) == 0) {
+      return(list(beach = beach[0, ], river = river[0, ]))
+    }
+    
+    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
+    ws_union <- st_union(ws_filtered)
+    
+    beach_filtered <- tryCatch(
+      beach[st_within(beach, ws_union, sparse = FALSE)[, 1], ],
+      error = function(e) beach
+    )
+    river_filtered <- tryCatch(
+      river[st_within(river, ws_union, sparse = FALSE)[, 1], ],
+      error = function(e) river
+    )
+    list(beach = beach_filtered, river = river_filtered)
+  })
+  
+  # --- Stats outputs (watershed-aware) ---
+  output$stat_projects <- renderUI({
+    n_proj <- nrow(stormwater_in_ws())
+    div(
+      div(class = "stat-value", n_proj),
+      div(class = "stat-label", "Stormwater Projects")
+    )
+  })
+  
+  output$stat_lausd <- renderUI({
+    n_lausd <- if (!is.null(filtered_lausd())) nrow(filtered_lausd()) else 0
+    div(
+      div(class = "stat-value", n_lausd),
+      div(class = "stat-label", "LAUSD Parcels")
+    )
+  })
+  
+  output$stat_dac <- renderUI({
+    n_dac <- nrow(dac_in_ws())
+    total_dac <- nrow(dac_pts)
+    div(
+      div(class = "stat-value", paste0(n_dac, "/", total_dac)),
+      div(class = "stat-label", "DAC Tracts")
+    )
+  })
+  
+  output$stat_monitoring <- renderUI({
+    mon <- monitoring_in_ws()
+    n_mon <- nrow(mon$beach) + nrow(mon$river)
+    div(
+      div(class = "stat-value", n_mon),
+      div(class = "stat-label", "Monitoring Sites")
+    )
+  })
+  
+  output$stat_volume <- renderUI({
+    proj_data <- stormwater_in_ws()
+    total_vol <- sum(proj_data$volume_addressed, na.rm = TRUE)
+    div(
+      div(class = "stat-value", paste0(format(round(total_vol, 1), big.mark = ","))),
+      div(class = "stat-label", "Acre-ft Addressed")
+    )
+  })
   
   # dynamic watershed filter UI
   output$watershed_filter_ui <- renderUI({
@@ -1583,48 +1820,7 @@ server <- function(input, output, session) {
                              selected = character(0))
   })
   
-  # Stats outputs
-  output$stat_projects <- renderUI({
-    n_proj <- nrow(filtered_stormwater())
-    div(
-      div(class = "stat-value", n_proj),
-      div(class = "stat-label", "Stormwater Projects")
-    )
-  })
-  
-  output$stat_lausd <- renderUI({
-    n_lausd <- if (!is.null(filtered_lausd())) nrow(filtered_lausd()) else 0
-    div(
-      div(class = "stat-value", n_lausd),
-      div(class = "stat-label", "LAUSD Parcels")
-    )
-  })
-  
-  output$stat_dac <- renderUI({
-    n_dac <- nrow(filtered_dac())
-    total_dac <- nrow(dac_pts)
-    div(
-      div(class = "stat-value", paste0(n_dac, "/", total_dac)),
-      div(class = "stat-label", "DAC Tracts")
-    )
-  })
-  
-  output$stat_monitoring <- renderUI({
-    n_mon <- nrow(monitoring_sites_pts) + nrow(testing_sites_pts)
-    div(
-      div(class = "stat-value", n_mon),
-      div(class = "stat-label", "Monitoring Sites")
-    )
-  })
-  
-  output$stat_volume <- renderUI({
-    proj_data <- filtered_stormwater()
-    total_vol <- sum(proj_data$volume_addressed, na.rm = TRUE)
-    div(
-      div(class = "stat-value", paste0(format(round(total_vol, 1), big.mark = ","))),
-      div(class = "stat-label", "Acre-ft Addressed")
-    )
-  })
+
   output$map <- renderLeaflet({
     # If anything in here errors, you still get a basic map instead of a blank panel
     tryCatch({
@@ -1658,269 +1854,15 @@ server <- function(input, output, session) {
         message("la_county_geo is NULL or empty; skipping outline.")
       }
       
-      m
-    }, error = function(e) {
-      message("renderLeaflet() failed: ", e$message)
-      
-      # Fallback simple map so you can see something even if providers/geo fail
-      leaflet() %>%
-        addTiles() %>%
-        setView(lng = -118.25, lat = 34.05, zoom = 10)
-    })
-  })
-  
-  outputOptions(output, "map", suspendWhenHidden = FALSE)
-  
-  # Observer for dynamic map layer toggling (SAFE: waits for map to exist)
-  observeEvent(
-    list(
-      input$map_bounds,               # <- ensures leaflet output is ready
-      input$map_layers,
-      input$project_type_filter,
-      input$dac_percentile_filter
-    ),
-    {
-      req(input$map_bounds)  # ✅ map exists in browser now
-      
-      layers <- input$map_layers
-      if (is.null(layers)) layers <- character(0)
-      
-      proxy <- leafletProxy("map")
-      
-      # Clear all dynamic groups
-      proxy %>%
-        clearGroup("Stormwater Projects") %>%
-        clearGroup("LAUSD School Parcels") %>%
-        clearGroup("Disadvantaged Communities") %>%
-        clearGroup("Beach Monitoring Sites") %>%
-        clearGroup("River Monitoring Sites") %>%
-        clearGroup("LA County Precip Stations")
-      
-      show <- function(x) isTRUE(x %in% layers)
-      
-      # ---- DAC ----
-      if (show("Disadvantaged Communities")) {
-        dac_filtered <- filtered_dac()
-        
-        if (nrow(dac_filtered) > 0) {
-          dac_pal <- colorNumeric(
-            palette = c("#fc8d59", "#d73027"),
-            domain = c(75, 100)
-          )
-          
-          proxy %>%
-            addCircleMarkers(
-              data = dac_filtered,
-              lng = ~lon, lat = ~lat,
-              radius = 6,
-              color = "#FFFFFF",
-              fillColor = ~dac_pal(ces_percentile),
-              fillOpacity = 0.7,
-              weight = 1,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
-                "<div style='background-color: #d73027; ",
-                "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
-                "<table style='font-size: 12px; width: 100%;'>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
-                "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
-                "</table>",
-                "</div>"
-              ),
-              group = "Disadvantaged Communities"
-            )
-        }
-      }
-      
-      # ---- LAUSD Parcels (interactive: click to see school name) ----
-      if (show("LAUSD School Parcels") && !is.null(lausd_parcels) && nrow(lausd_parcels) > 0) {
-        
-        lausd_data <- filtered_lausd()
-        
-        if (is.null(lausd_data) || nrow(lausd_data) == 0) {
-          message("LAUSD layer selected but filtered_lausd() returned 0 rows (skipping draw).")
-        } else {
-          proxy %>%
-            addPolygons(
-              data = lausd_data,
-              color = "#F47E48",
-              weight = 1,
-              opacity = 0.9,
-              fillOpacity = 0.35,
-              smoothFactor = 0.5,
-              group = "LAUSD School Parcels",
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 180px;'>",
-                "<div style='background-color: #F47E48; color: white; padding: 10px; ",
-                "margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>LAUSD School Parcel</strong></div>",
-                "<p style='margin: 0; padding-top: 4px; color: #263746; font-size: 13px;'>",
-                "<b>", LABEL, "</b></p>",
-                "</div>"
-              ),
-              highlightOptions = highlightOptions(
-                weight = 3,
-                color = "#263746",
-                fillOpacity = 0.6,
-                bringToFront = TRUE
-              )
-            )
-        }
-      }
-      
-      # ---- Stormwater projects ----
-      if (show("Stormwater Projects")) {
-        proj_data <- filtered_stormwater()
-        if (nrow(proj_data) > 0) {
-          proxy %>%
-            addCircleMarkers(
-              data = proj_data,
-              lng = ~lon, lat = ~lat,
-              radius = 7,
-              color = "#FFFFFF",
-              fillColor = htb_colors$algae,
-              fillOpacity = 0.85,
-              weight = 2,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 200px;'>",
-                "<div style='background-color: #90B83E; ",
-                "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
-                "<table style='font-size: 12px; width: 100%;'>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Type:</td><td style='text-align: right;'><b>", project_type_clean, "</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Volume:</td><td style='text-align: right;'>", volume_fmt, "</td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Capital Cost:</td><td style='text-align: right;'>", capital_cost_fmt, "</td></tr>",
-                ifelse(!is.na(completion_date),
-                       paste0("<tr><td style='color: #666; padding: 3px 0;'>Completed:</td><td style='text-align: right;'>", completion_date, "</td></tr>"),
-                       ""),
-                "</table>",
-                "</div>"
-              ),
-              group = "Stormwater Projects"
-            )
-        }
-      }
-      
-      # ---- Beach sites ----
-      if (show("Beach Monitoring Sites")) {
-        beach_sites <- tryCatch({
-          monitoring_sites_pts[la_county_geo, op = st_within]
-        }, error = function(e) monitoring_sites_pts)
-        
-        if (nrow(beach_sites) > 0) {
-          proxy %>%
-            addCircleMarkers(
-              data = beach_sites,
-              lng = ~lon, lat = ~lat,
-              radius = 8,
-              color = "#FFFFFF",
-              fillColor = htb_colors$htb_blue,
-              fillOpacity = 0.85,
-              weight = 2,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif;'>",
-                "<div style='background-color: #40B4E5; ",
-                "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>", location_name, "</strong></div>",
-                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Beach Monitoring Site</p>",
-                "</div>"
-              ),
-              group = "Beach Monitoring Sites"
-            )
-        }
-      }
-      
-      # ---- River sites ----
-      if (show("River Monitoring Sites")) {
-        if (nrow(testing_sites_pts) > 0) {
-          proxy %>%
-            addCircleMarkers(
-              data = testing_sites_pts,
-              lng = ~lon, lat = ~lat,
-              radius = 8,
-              color = "#FFFFFF",
-              fillColor = htb_colors$deep_sea,
-              fillOpacity = 0.85,
-              weight = 2,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif;'>",
-                "<div style='background-color: #0E4C90; ",
-                "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
-                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Order in watershed: ", order_in_ws, "</p>",
-                "</div>"
-              ),
-              group = "River Monitoring Sites"
-            )
-        }
-      }
-      
-      # ---- Precip stations ----
-      if (show("LA County Precip Stations")) {
-        if (nrow(la_prec_stations_pts) > 0) {
-          proxy %>%
-            addCircleMarkers(
-              data = la_prec_stations_pts,
-              lng = ~lon, lat = ~lat,
-              radius = 8,
-              color = "#FFFFFF",
-              fillColor = htb_colors$sunshine,
-              fillOpacity = 0.85,
-              weight = 2,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif;'>",
-                "<div style='background-color: #FCC755; ",
-                "color: #263746; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
-                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Precipitation Station</p>",
-                "</div>"
-              ),
-              group = "LA County Precip Stations"
-            )
-        }
-      }
-    },
-    ignoreNULL = FALSE
-  )
-  
-  # Separate observer for watershed boundaries (SAFE: waits for map to exist)
-  observeEvent(
-    list(input$map_bounds, input$map_layers, input$selected_watersheds),
-    {
-      req(input$map_bounds)
-      
-      layers <- input$map_layers
-      if (is.null(layers)) layers <- character(0)
-      
-      proxy <- leafletProxy("map")
-      proxy %>% clearGroup("Watershed Boundaries")
-      
-      if (!("Watershed Boundaries" %in% layers)) return()
-      if (is.null(fixed_ws)) return()
-      
-      selected_ws <- input$selected_watersheds
-      if (is.null(selected_ws) || length(selected_ws) == 0) {
-        selected_ws <- unique(fixed_ws$LABEL)
-      }
-      
-      filtered_ws <- fixed_ws %>%
-        filter(LABEL %in% selected_ws)
-      
-      if (nrow(filtered_ws) > 0) {
-        proxy %>%
+      # Draw watersheds here so they sit at the bottom of the layer stack
+      if (!is.null(fixed_ws) && nrow(fixed_ws) > 0) {
+        m <- m %>%
           addPolygons(
-            data = filtered_ws,
+            data = fixed_ws,
             weight = 2,
             color = htb_colors$ocean_blue,
             fillColor = htb_colors$light_aqua,
-            fillOpacity = 0.3,
+            fillOpacity = 0.15,
             smoothFactor = 0.5,
             label = ~LABEL,
             labelOptions = labelOptions(
@@ -1940,13 +1882,314 @@ server <- function(input, output, session) {
             ),
             popup = ~paste0(
               "<div style='font-family: Source Sans Pro, sans-serif;'>",
-              "<div style='background-color: #005CB9; ",
-              "color: white; padding: 10px; margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+              "<div style='background-color: #005CB9; color: white; padding: 10px;
+               margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
               "<strong style='font-family: Montserrat, sans-serif;'>", LABEL, "</strong></div>",
               "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Watershed Boundary</p>",
               "</div>"
             )
           )
+      }
+      
+      m                          # <-- still the last line
+    }, error = function(e) {
+      message("renderLeaflet() failed: ", e$message)
+      
+      # Fallback simple map so you can see something even if providers/geo fail
+      leaflet() %>%
+        addTiles() %>%
+        setView(lng = -118.25, lat = 34.05, zoom = 10)
+    })
+  })
+  
+  outputOptions(output, "map", suspendWhenHidden = FALSE)
+  
+  # Observer for dynamic map layer toggling (SAFE: waits for map to exist)
+  observeEvent(
+    list(
+      input$map_bounds,
+      input$map_layers,
+      input$project_type_filter,
+      input$dac_percentile_filter,
+      input$selected_watersheds
+    ),
+    {
+      req(input$map_bounds)
+      
+      # Build active watershed union for spatial clipping
+      ws_union <- NULL
+      if (!is.null(fixed_ws) && nrow(fixed_ws) > 0) {
+        selected_ws <- input$selected_watersheds
+        if (!is.null(selected_ws) && length(selected_ws) > 0) {
+          ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
+          if (nrow(ws_filtered) > 0) {
+            ws_union <- tryCatch(st_union(ws_filtered), error = function(e) NULL)
+          }
+        }
+      }
+      
+      clip_to_ws <- function(sf_obj) {
+        if (is.null(ws_union) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
+        tryCatch(
+          sf_obj[st_within(sf_obj, ws_union, sparse = FALSE)[, 1], ],
+          error = function(e) sf_obj
+        )
+      }
+      
+      clip_poly_to_ws <- function(sf_obj) {
+        if (is.null(ws_union) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
+        tryCatch(
+          sf_obj[st_intersects(sf_obj, ws_union, sparse = FALSE)[, 1], ],
+          error = function(e) sf_obj
+        )
+      }
+      
+      layers <- input$map_layers
+      if (is.null(layers)) layers <- character(0)
+      
+      proxy <- leafletProxy("map")
+      
+      proxy %>%
+        clearGroup("Stormwater Projects") %>%
+        clearGroup("Park Polygons") %>%
+        clearGroup("LAUSD School Parcels") %>%
+        clearGroup("Disadvantaged Communities") %>%
+        clearGroup("Beach Monitoring Sites") %>%
+        clearGroup("River Monitoring Sites") %>%
+        clearGroup("LA County Precip Stations")
+      
+      show <- function(x) isTRUE(x %in% layers)
+      
+      # ---- DAC ----
+      if (show("Disadvantaged Communities")) {
+        dac_filtered <- clip_to_ws(filtered_dac())
+        if (nrow(dac_filtered) > 0) {
+          dac_pal <- colorNumeric(
+            palette = c("#fc8d59", "#d73027"),
+            domain = c(75, 100)
+          )
+          proxy %>%
+            addCircleMarkers(
+              data = dac_filtered,
+              lng = ~lon, lat = ~lat,
+              radius = 6,
+              color = "#FFFFFF",
+              fillColor = ~dac_pal(ces_percentile),
+              fillOpacity = 0.7,
+              weight = 1,
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
+                "<div style='background-color: #d73027; color: white; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
+                "<table style='font-size: 12px; width: 100%;'>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
+                "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
+                "</table></div>"
+              ),
+              group = "Disadvantaged Communities"
+            )
+        }
+      }
+        
+     
+      # ---- Park Polygons ----
+      if (show("Park Polygons") && !is.null(park_polygons) && nrow(park_polygons) > 0) {
+        park_clipped <- clip_poly_to_ws(park_polygons)
+        if (nrow(park_clipped) > 0) {
+          proxy %>%
+            addPolygons(
+              data = park_clipped,
+              color = "#1a7340",
+              weight = 1,
+              opacity = 0.9,
+              fillColor = "#2ca25f",
+              fillOpacity = 0.35,
+              smoothFactor = 0.5,
+              group = "Park Polygons",
+              popup = "<div style='font-family: Source Sans Pro, sans-serif; min-width: 160px;'>
+                       <div style='background-color: #2ca25f; color: white; padding: 10px;
+                         margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>
+                         <strong style='font-family: Montserrat, sans-serif;'>Park</strong>
+                       </div>
+                       <p style='margin: 0; padding-top: 4px; color: #263746; font-size: 13px;'>
+                         LA County Park Polygon</p>
+                     </div>",
+              highlightOptions = highlightOptions(
+                weight = 3,
+                color = "#263746",
+                fillOpacity = 0.6,
+                bringToFront = TRUE
+              )
+            )
+        }
+      }
+      
+      # ---- LAUSD Parcels ----
+      if (show("LAUSD School Parcels") && !is.null(lausd_parcels) && nrow(lausd_parcels) > 0) {
+        lausd_data <- clip_poly_to_ws(filtered_lausd())
+        if (is.null(lausd_data) || nrow(lausd_data) == 0) {
+          message("LAUSD layer selected but filtered_lausd() returned 0 rows (skipping draw).")
+        } else {
+          proxy %>%
+            addPolygons(
+              data = lausd_data,
+              color = "#F47E48",
+              weight = 1,
+              opacity = 0.9,
+              fillOpacity = 0.35,
+              smoothFactor = 0.5,
+              group = "LAUSD School Parcels",
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 180px;'>",
+                "<div style='background-color: #F47E48; color: white; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>LAUSD School Parcel</strong></div>",
+                "<p style='margin: 0; padding-top: 4px; color: #263746; font-size: 13px;'>",
+                "<b>", LABEL, "</b></p>",
+                "</div>"
+              ),
+              highlightOptions = highlightOptions(
+                weight = 3,
+                color = "#263746",
+                fillOpacity = 0.6,
+                bringToFront = TRUE
+              )
+            )
+        }
+      }
+      
+      # ---- Stormwater projects ----
+      if (show("Stormwater Projects")) {
+        proj_data <- clip_to_ws(filtered_stormwater())
+        if (nrow(proj_data) > 0) {
+          proxy %>%
+            addCircleMarkers(
+              data = proj_data,
+              lng = ~lon, lat = ~lat,
+              radius = 7,
+              color = "#FFFFFF",
+              fillColor = htb_colors$algae,
+              fillOpacity = 0.85,
+              weight = 2,
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 200px;'>",
+                "<div style='background-color: #90B83E; color: white; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
+                "<table style='font-size: 12px; width: 100%;'>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Type:</td><td style='text-align: right;'><b>", project_type_clean, "</b></td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Volume:</td><td style='text-align: right;'>", volume_fmt, "</td></tr>",
+                "<tr><td style='color: #666; padding: 3px 0;'>Capital Cost:</td><td style='text-align: right;'>", capital_cost_fmt, "</td></tr>",
+                ifelse(!is.na(completion_date),
+                       paste0("<tr><td style='color: #666; padding: 3px 0;'>Completed:</td><td style='text-align: right;'>", completion_date, "</td></tr>"),
+                       ""),
+                "</table></div>"
+              ),
+              group = "Stormwater Projects"
+            )
+        }
+      }
+      
+      # ---- Beach sites ----
+      if (show("Beach Monitoring Sites")) {
+        beach_sites <- clip_to_ws(monitoring_sites_pts)
+        if (nrow(beach_sites) > 0) {
+          proxy %>%
+            addCircleMarkers(
+              data = beach_sites,
+              lng = ~lon, lat = ~lat,
+              radius = 8,
+              color = "#FFFFFF",
+              fillColor = htb_colors$htb_blue,
+              fillOpacity = 0.85,
+              weight = 2,
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif;'>",
+                "<div style='background-color: #40B4E5; color: white; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>", location_name, "</strong></div>",
+                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Beach Monitoring Site</p>",
+                "</div>"
+              ),
+              group = "Beach Monitoring Sites"
+            )
+        }
+      }
+      
+      # ---- River sites ----
+      if (show("River Monitoring Sites")) {
+        river_sites <- clip_to_ws(testing_sites_pts)
+        if (nrow(river_sites) > 0) {
+          proxy %>%
+            addCircleMarkers(
+              data = river_sites,
+              lng = ~lon, lat = ~lat,
+              radius = 8,
+              color = "#FFFFFF",
+              fillColor = htb_colors$deep_sea,
+              fillOpacity = 0.85,
+              weight = 2,
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif;'>",
+                "<div style='background-color: #0E4C90; color: white; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
+                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Order in watershed: ", order_in_ws, "</p>",
+                "</div>"
+              ),
+              group = "River Monitoring Sites"
+            )
+        }
+      }
+      
+      # ---- Precip stations ----
+      if (show("LA County Precip Stations")) {
+        precip_sites <- clip_to_ws(la_prec_stations_pts)
+        if (nrow(precip_sites) > 0) {
+          proxy %>%
+            addCircleMarkers(
+              data = precip_sites,
+              lng = ~lon, lat = ~lat,
+              radius = 8,
+              color = "#FFFFFF",
+              fillColor = htb_colors$sunshine,
+              fillOpacity = 0.85,
+              weight = 2,
+              popup = ~paste0(
+                "<div style='font-family: Source Sans Pro, sans-serif;'>",
+                "<div style='background-color: #FCC755; color: #263746; padding: 10px;
+                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                "<strong style='font-family: Montserrat, sans-serif;'>", name, "</strong></div>",
+                "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Precipitation Station</p>",
+                "</div>"
+              ),
+              group = "LA County Precip Stations"
+            )
+        }
+      }
+      
+    },
+    ignoreNULL = FALSE
+  )
+  
+  # Separate observer for watershed boundaries (SAFE: waits for map to exist)
+  observeEvent(
+    list(input$map_bounds, input$map_layers, input$selected_watersheds),
+    {
+      req(input$map_bounds)
+      proxy <- leafletProxy("map")
+      
+      if ("Watershed Boundaries" %in% input$map_layers) {
+        proxy %>% showGroup("Watershed Boundaries")
+      } else {
+        proxy %>% hideGroup("Watershed Boundaries")
       }
     },
     ignoreNULL = FALSE
