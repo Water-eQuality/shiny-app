@@ -1303,6 +1303,34 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
+                          # --- Completion Year Filter ---
+                          tags$details(
+                            tags$summary(
+                              style = "cursor: pointer; font-size: 13px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: 1px;
+                   font-family: 'Montserrat', sans-serif; color: #0E4C90;
+                   padding: 0.5rem 0; list-style: none;
+                   display: flex; align-items: center; justify-content: space-between;",
+                              "Completion Year",
+                              tags$span(style = "font-size: 16px; color: #00B6B6;", HTML("&#9660;"))
+                            ),
+                            div(style = "padding-top: 0.75rem;",
+                                div(class = "info-box accent-algae", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
+                                    p(HTML("<strong>About this filter:</strong> Filter stormwater capture projects 
+                        by their actual completion date. Use the slider to focus on 
+                        projects completed within a specific year range."),
+                                      style = "margin: 0; font-size: 11px; line-height: 1.5;")
+                                ),
+                                sliderInput("completion_year_range", NULL,
+                                            min = 2007, max = 2024,
+                                            value = c(2007, 2024),
+                                            step = 1, sep = "",
+                                            ticks = TRUE)
+                            )
+                          ),
+                          
+                          hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
+                          
                           # --- Watershed Filter (collapsible) ---
                           tags$details(
                             tags$summary(
@@ -1626,8 +1654,16 @@ server <- function(input, output, session) {
     if (is.null(selected_types) || length(selected_types) == 0) {
       return(stormwater_pts[0, ])
     }
+    
+    yr_range <- input$completion_year_range
+    
     stormwater_pts %>%
-      filter(project_type_clean %in% selected_types)
+      filter(project_type_clean %in% selected_types) %>%
+      filter(
+        is.na(completion_date) |
+          (as.integer(format(as.Date(completion_date, tryFormats = c("%m/%d/%Y", "%Y-%m-%d")), "%Y")) >= yr_range[1] &
+             as.integer(format(as.Date(completion_date, tryFormats = c("%m/%d/%Y", "%Y-%m-%d")), "%Y")) <= yr_range[2])
+      )
   })
   
   # Reactive filtered DAC tracts
