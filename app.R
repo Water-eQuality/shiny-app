@@ -7,7 +7,7 @@ library(bslib)
 library(lubridate)
 library(DT)
 library(scales)
-library(plotly)
+
 
 # Helpful while debugging crashes:
 options(shiny.fullstacktrace = TRUE)
@@ -1558,7 +1558,7 @@ ui <- navbarPage(
                                                 ),
                                                 value = FALSE)
                               ),
-                              plotlyOutput("trend_plot", height = "450px")
+                              plotOutput("trend_plot", height = "450px")
                           )
                  ),
                  tabPanel("Seasonal Patterns",
@@ -1571,7 +1571,7 @@ ui <- navbarPage(
                                                 ),
                                                 value = FALSE)
                               ),
-                              plotlyOutput("seasonal_plot", height = "450px")
+                              plotOutput("seasonal_plot", height = "450px")
                           )
                  )
                )   # closes tabsetPanel
@@ -2265,9 +2265,10 @@ server <- function(input, output, session) {
     },
     ignoreNULL = FALSE
   )
-  
+
   # Trend plot
-  output$trend_plot <- renderPlotly({
+  # Trend plot
+  output$trend_plot <- renderPlot({
     df <- fib_long %>%
       filter(location_name == input$site_select,
              parameter == input$param_select,
@@ -2276,7 +2277,7 @@ server <- function(input, output, session) {
       mutate(result_num = as.numeric(result))
     req(nrow(df) > 0)
     
-    use_log <- isTRUE(input$log_y_trend)
+    use_log      <- isTRUE(input$log_y_trend)
     show_geomean <- isTRUE(input$show_geomean_threshold)
     show_ssm     <- isTRUE(input$show_ssm_threshold)
     
@@ -2286,94 +2287,57 @@ server <- function(input, output, session) {
                           "entero_val" = "Enterococcus",
                           input$param_select)
     
-    # Thresholds per parameter
     thresholds <- list(
       total_val  = list(geomean = 1000,  ssm = 10000),
-      fecal_val  = list(geomean = NULL,  ssm = 400),
-      entero_val = list(geomean = 33,    ssm = 104)
+      fecal_val  = list(geomean = NULL,   ssm = 400),
+      entero_val = list(geomean = 33,     ssm = 104)
     )
     thresh <- thresholds[[input$param_select]]
     
-    p <- plot_ly() %>%
-      add_trace(
-        data = df,
-        x = ~date, y = ~result_num,
-        type = "scatter", mode = "markers",
-        name = param_label,
-        marker = list(
-          color = "rgba(64, 180, 229, 0.45)",
-          size = 5,
-          line = list(color = "rgba(0, 92, 185, 0.3)", width = 0.5)
-        ),
-        hovertemplate = paste0("<b>%{x|%b %d, %Y}</b><br>",
-                               param_label, ": <b>%{y:.0f}</b> MPN/100mL<extra></extra>")
+    p <- ggplot(df, aes(x = date, y = result_num)) +
+      geom_point(color = "#40B4E5", fill = "#40B4E5",
+                 alpha = 0.5, size = 2, shape = 21, stroke = 0.4) +
+      labs(
+        title = paste0("Water Quality at ", input$site_select),
+        x = "Date",
+        y = "Result (MPN/100mL)"
+      ) +
+      theme_minimal(base_family = "sans") +
+      theme(
+        plot.title       = element_text(color = "#0E4C90", face = "bold", size = 15),
+        axis.title       = element_text(color = "#263746", size = 12),
+        axis.text        = element_text(color = "#555", size = 11),
+        panel.grid.major = element_line(color = "#f0f0f0"),
+        panel.grid.minor = element_blank(),
+        plot.background  = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "#fafbfc", color = NA),
+        legend.position  = "bottom",
+        legend.text      = element_text(size = 11)
       )
     
-    # Geomean threshold line
     if (show_geomean && !is.null(thresh$geomean)) {
-      p <- p %>%
-        add_trace(
-          x = range(df$date),
-          y = c(thresh$geomean, thresh$geomean),
-          type = "scatter", mode = "lines",
-          name = paste0("Geomean Threshold (", thresh$geomean, " MPN/100mL)"),
-          line = list(color = "#F26859", width = 2.5, dash = "dash"),
-          hovertemplate = paste0("Geomean Threshold: <b>", thresh$geomean, "</b> MPN/100mL<extra></extra>")
-        )
+      p <- p + geom_hline(yintercept = thresh$geomean,
+                          color = "#F26859", linewidth = 0.9, linetype = "dashed") +
+        annotate("text", x = min(df$date), y = thresh$geomean,
+                 label = paste0("Geomean: ", thresh$geomean, " MPN/100mL"),
+                 hjust = 0, vjust = -0.5, size = 3.5, color = "#F26859")
     }
     
-    # Single sample max threshold line
     if (show_ssm && !is.null(thresh$ssm)) {
-      p <- p %>%
-        add_trace(
-          x = range(df$date),
-          y = c(thresh$ssm, thresh$ssm),
-          type = "scatter", mode = "lines",
-          name = paste0("Single Sample Max (", thresh$ssm, " MPN/100mL)"),
-          line = list(color = "#FCC755", width = 2.5, dash = "dot"),
-          hovertemplate = paste0("SSM Threshold: <b>", thresh$ssm, "</b> MPN/100mL<extra></extra>")
-        )
+      p <- p + geom_hline(yintercept = thresh$ssm,
+                          color = "#FCC755", linewidth = 0.9, linetype = "dotted") +
+        annotate("text", x = min(df$date), y = thresh$ssm,
+                 label = paste0("SSM: ", thresh$ssm, " MPN/100mL"),
+                 hjust = 0, vjust = -0.5, size = 3.5, color = "#e6a800")
     }
     
-    p %>%
-      layout(
-        title = list(
-          text = paste0("<b>Water Quality at<br>", input$site_select, "</b>"),
-          font = list(family = "Montserrat, sans-serif", size = 16, color = "#0E4C90"),
-          x = 0.02, xanchor = "left"
-        ),
-        xaxis = list(
-          title = list(text = "Date", font = list(family = "Montserrat", size = 13, color = "#263746")),
-          showgrid = TRUE, gridcolor = "#f0f0f0",
-          zeroline = FALSE,
-          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
-          showline = TRUE, linecolor = "#ddd"
-        ),
-        yaxis = list(
-          title = list(text = "Result (MPN/100mL)", font = list(family = "Montserrat", size = 13, color = "#263746")),
-          type = if (use_log) "log" else "linear",
-          showgrid = TRUE, gridcolor = "#f0f0f0",
-          zeroline = FALSE,
-          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
-          showline = TRUE, linecolor = "#ddd"
-        ),
-        legend = list(
-          orientation = "h", x = 0, y = -0.18,
-          font = list(family = "Source Sans Pro", size = 12),
-          bgcolor = "rgba(0,0,0,0)"
-        ),
-        paper_bgcolor = "white",
-        plot_bgcolor  = "#fafbfc",
-        margin = list(t = 80, r = 30, b = 80, l = 80),
-        hovermode = "x unified",
-        font = list(family = "Source Sans Pro, sans-serif")
-      ) %>%
-      config(displayModeBar = TRUE,
-             modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"),
-             displaylogo = FALSE)
+    if (use_log) p <- p + scale_y_log10()
+    
+    p
   })
-  # Seasonal plot — Wet vs Dry only
-  output$seasonal_plot <- renderPlotly({
+  
+  # Seasonal plot
+  output$seasonal_plot <- renderPlot({
     df <- fib_long %>%
       filter(location_name == input$site_select,
              parameter == input$param_select,
@@ -2401,6 +2365,10 @@ server <- function(input, output, session) {
         median = median(result_num, na.rm = TRUE),
         n      = n(),
         .groups = "drop"
+      ) %>%
+      mutate(
+        bar_label = paste0(round(avg, 0), " MPN/100mL\nmedian: ",
+                           round(median, 0), "\nn = ", n)
       )
     
     season_colors <- c(
@@ -2408,75 +2376,34 @@ server <- function(input, output, session) {
       "Dry Season\n(May-Oct)" = "#F47E48"
     )
     
-    # Annotation label for each bar
-    bar_labels <- paste0(
-      "<b>", round(seasonal_df$avg, 0), "</b> MPN/100mL<br>",
-      "median: ", round(seasonal_df$median, 0), "<br>",
-      "n = ", seasonal_df$n
-    )
+    p <- ggplot(seasonal_df, aes(x = season, y = avg, fill = season)) +
+      geom_col(width = 0.45, alpha = 0.88) +
+      geom_text(aes(label = bar_label),
+                vjust = -0.4, size = 4, fontface = "bold", color = "#263746") +
+      scale_fill_manual(values = season_colors) +
+      labs(
+        title = paste0("Wet vs. Dry Season\n", param_label, " at ", input$site_select),
+        x = NULL,
+        y = paste0("Mean ", param_label, " (MPN/100mL)")
+      ) +
+      theme_minimal(base_family = "sans") +
+      theme(
+        plot.title         = element_text(color = "#0E4C90", face = "bold", size = 15),
+        axis.title.y       = element_text(color = "#263746", size = 12),
+        axis.text.x        = element_text(color = "#263746", size = 14, face = "bold"),
+        axis.text.y        = element_text(color = "#555", size = 11),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#f0f0f0"),
+        panel.grid.minor   = element_blank(),
+        plot.background    = element_rect(fill = "white", color = NA),
+        panel.background   = element_rect(fill = "#fafbfc", color = NA),
+        legend.position    = "none"
+      )
     
-    plot_ly(seasonal_df,
-            x = ~season,
-            y = ~avg,
-            type = "bar",
-            width = 0.4,
-            marker = list(
-              color = unname(season_colors[as.character(seasonal_df$season)]),
-              line  = list(color = "white", width = 2),
-              opacity = 0.88
-            ),
-            text = bar_labels,
-            textposition = "auto",
-            insidetextfont = list(color = "white", family = "Montserrat", size = 13),
-            outsidetextfont = list(color = "#263746", family = "Montserrat", size = 13),
-            hovertemplate = paste0(
-              "<b>%{x}</b><br>",
-              "Mean: <b>%{y:.0f}</b> MPN/100mL<br>",
-              "Median: <b>%{customdata[0]:.0f}</b> MPN/100mL<br>",
-              "n = %{customdata[1]} samples<extra></extra>"
-            ),
-            customdata = ~cbind(median, n)
-    ) %>%
-      layout(
-        title = list(
-          text = paste0("<b>Wet vs. Dry Season</b><br>",
-                        "<span style='font-size:13px; color:#666;'>",
-                        param_label, " at ", input$site_select, "</span>"),
-          font = list(family = "Montserrat, sans-serif", size = 17, color = "#0E4C90"),
-          x = 0.02, xanchor = "left"
-        ),
-        xaxis = list(
-          title = "",
-          showgrid = FALSE,
-          zeroline = FALSE,
-          tickfont = list(family = "Montserrat", color = "#263746", size = 15),
-          fixedrange = TRUE
-        ),
-        yaxis = list(
-          title = list(
-            text = paste0("Mean ", param_label, " (MPN/100mL)"),
-            font = list(family = "Montserrat", size = 13, color = "#263746")
-          ),
-          type = if (use_log) "log" else "linear",
-          showgrid = TRUE, gridcolor = "#f0f0f0", gridwidth = 1,
-          zeroline = FALSE,
-          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
-          showline = FALSE
-        ),
-        paper_bgcolor = "white",
-        plot_bgcolor  = "#fafbfc",
-        bargap = 0.55,
-        margin = list(t = 100, r = 60, b = 60, l = 90),
-        font = list(family = "Source Sans Pro, sans-serif"),
-        shapes = list(
-          list(type = "line", x0 = -0.5, x1 = 1.5,
-               y0 = 0, y1 = 0,
-               line = list(color = "#ddd", width = 1))
-        )
-      ) %>%
-      config(displayModeBar = FALSE)
+    if (use_log) p <- p + scale_y_log10()
+    
+    p
   })
-  
   
   # Download handler for FIB data
   output$download_fib_data <- downloadHandler(
