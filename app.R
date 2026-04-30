@@ -7,6 +7,7 @@ library(bslib)
 library(lubridate)
 library(DT)
 library(scales)
+library(plotly)
 
 # Helpful while debugging crashes:
 options(shiny.fullstacktrace = TRUE)
@@ -1198,6 +1199,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
+                          
                           # --- DAC Filter (collapsible) ---
                           tags$details(
                             tags$summary(
@@ -1499,7 +1501,7 @@ ui <- navbarPage(
              sidebarPanel(
                width = 3,
                style = "background-color: white; border-radius: 12px; 
-                 box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 4px solid #F26859;",
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 4px solid #F26859;",
                h4("Filter Options", style = "color: #0E4C90; margin-bottom: 1.25rem;"),
                selectInput("site_select", "Monitoring Site:", 
                            choices = unique(fib_long$location_name)),
@@ -1514,28 +1516,68 @@ ui <- navbarPage(
                            sep = ""),
                div(class = "info-box accent-sunset", style = "margin-top: 1.5rem;",
                    p(HTML("<strong>Tip:</strong> Use the filters above to customize your 
-                  view of water quality trends."))
+             view of water quality trends."))
+               ),                              # <-- AFTER this closing ), add below
+               
+               hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
+               
+               h4("Threshold Lines", style = "color: #0E4C90; margin-bottom: 0.75rem; font-size: 0.9rem;"),
+               checkboxInput("show_geomean_threshold",
+                             label = tags$span(
+                               style = "font-size: 13px; font-weight: 600; color: #F26859;",
+                               "Show Geomean Threshold"
+                             ),
+                             value = FALSE),
+               checkboxInput("show_ssm_threshold",
+                             label = tags$span(
+                               style = "font-size: 13px; font-weight: 600; color: #e6a800;",
+                               "Show Single Sample Max"
+                             ),
+                             value = FALSE),
+               div(class = "info-box accent-sunshine", style = "margin-top: 0.75rem; padding: 0.75rem 1rem;",
+                   p(HTML("Thresholds vary by parameter:<br>
+             <b>Total Coliform:</b> 1,000 (geomean) / 10,000 (SSM)<br>
+             <b>Fecal Coliform:</b> 400 (SSM only)<br>
+             <b>Enterococcus:</b> 33 (geomean) / 104 (SSM)"),
+                     style = "margin: 0; font-size: 11px; line-height: 1.6;")
                )
-             ),
+               
+             ) ,  # closes sidebarPanel
              mainPanel(
                width = 9,
                h2("Water Quality Trends"),
                tabsetPanel(
                  type = "tabs",
-                 tabPanel("Time Series", 
+                 tabPanel("Time Series",
                           div(style = "padding: 1rem;",
-                              plotOutput("trend_plot", height = "450px")
+                              div(style = "display: flex; justify-content: flex-end; margin-bottom: 0.5rem;",
+                                  checkboxInput("log_y_trend",
+                                                label = tags$span(
+                                                  style = "font-size: 13px; font-weight: 600; color: #263746;",
+                                                  "Log\u2081\u2080 Y-axis"
+                                                ),
+                                                value = FALSE)
+                              ),
+                              plotlyOutput("trend_plot", height = "450px")
                           )
                  ),
-                 tabPanel("Seasonal Patterns", 
+                 tabPanel("Seasonal Patterns",
                           div(style = "padding: 1rem;",
-                              plotOutput("seasonal_plot", height = "450px")
+                              div(style = "display: flex; justify-content: flex-end; margin-bottom: 0.5rem;",
+                                  checkboxInput("log_y_seasonal",
+                                                label = tags$span(
+                                                  style = "font-size: 13px; font-weight: 600; color: #263746;",
+                                                  "Log\u2081\u2080 Y-axis"
+                                                ),
+                                                value = FALSE)
+                              ),
+                              plotlyOutput("seasonal_plot", height = "450px")
                           )
                  )
-               )
-             )
-           )
-  ),
+               )   # closes tabsetPanel
+             )     # closes mainPanel
+           )       # closes sidebarLayout
+  ),              # closes tabPanel("Trends") — COMMA because more tabs follow
   
   # Data Sources Tab
   tabPanel("Data Sources",
@@ -1546,34 +1588,28 @@ ui <- navbarPage(
                         Below you'll find citation information, data descriptions, and links 
                         to the original sources for transparency and reproducibility."))
              ),
-             
-             # Beach Monitoring Data Citation Card
              fluidRow(
                column(12,
-                      div(class = "feature-card", 
+                      div(class = "feature-card",
                           style = "border-top: 5px solid #40B4E5;",
-                          
                           div(style = "display: flex; align-items: center; margin-bottom: 1rem;",
-                              div(class = "feature-icon", 
+                              div(class = "feature-icon",
                                   style = "margin-bottom: 0; margin-right: 1rem;",
                                   icon("water")),
                               div(
-                                h3("Beach Water Quality Monitoring Data", 
+                                h3("Beach Water Quality Monitoring Data",
                                    style = "margin: 0; color: #0E4C90; font-size: 1.4rem;"),
-                                p("Fecal Indicator Bacteria (FIB) Measurements", 
+                                p("Fecal Indicator Bacteria (FIB) Measurements",
                                   style = "margin: 0; color: #666; font-size: 0.9rem;")
                               )
                           ),
-                          
                           hr(style = "border-color: #e8eaed; margin: 1rem 0;"),
-                          
                           h4("Description", style = "color: #263746; font-size: 1rem; margin-bottom: 0.5rem;"),
                           p("This dataset contains fecal indicator bacteria (FIB) monitoring results 
                             from beaches across Los Angeles County. The data includes measurements of 
                             Total Coliform, Fecal Coliform, and Enterococcus -- key indicators used to 
                             assess recreational water quality and protect public health.",
                             style = "color: #555; line-height: 1.6;"),
-                          
                           div(style = "background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;",
                               h4("Dataset Details", style = "color: #263746; font-size: 1rem; margin-bottom: 0.75rem;"),
                               tags$table(style = "width: 100%; font-size: 0.9rem;",
@@ -1595,7 +1631,6 @@ ui <- navbarPage(
                                          )
                               )
                           ),
-                          
                           div(class = "info-box accent-algae", style = "margin: 1rem 0;",
                               h4("Suggested Citation", style = "color: #263746; font-size: 0.95rem; margin-bottom: 0.5rem;"),
                               p(HTML("California State Water Resources Control Board. <em>Beach Water Quality 
@@ -1604,7 +1639,6 @@ ui <- navbarPage(
                                      target='_blank' style='color: #005CB9;'>https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html</a>"),
                                 style = "margin: 0; font-size: 0.9rem; line-height: 1.6;")
                           ),
-                          
                           div(style = "display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;",
                               tags$a(href = "https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html",
                                      target = "_blank",
@@ -1612,21 +1646,19 @@ ui <- navbarPage(
                                      style = "display: inline-flex; align-items: center;",
                                      icon("external-link-alt", style = "margin-right: 8px;"),
                                      "Visit Data Source"),
-                              downloadButton("download_fib_data", "Download Dataset", 
+                              downloadButton("download_fib_data", "Download Dataset",
                                              class = "btn-download",
                                              style = "display: inline-flex; align-items: center;")
                           )
                       )
                )
              ),
-             
-             # Placeholder for future data sources
              fluidRow(
                column(12,
                       div(style = "margin-top: 2rem; padding: 2rem; background: #f8f9fa; 
                                   border-radius: 12px; border: 2px dashed #d0d0d0; text-align: center;",
                           icon("plus-circle", style = "font-size: 2rem; color: #aaa; margin-bottom: 0.5rem;"),
-                          h4("Additional Data Sources Coming Soon", 
+                          h4("Additional Data Sources Coming Soon",
                              style = "color: #888; font-weight: 500; margin-bottom: 0.25rem;"),
                           p("Citations for stormwater projects, DAC data, LAUSD parcels, and watershed boundaries 
                             will be added here.",
@@ -1635,8 +1667,11 @@ ui <- navbarPage(
                )
              )
            )
-  )
-)
+  )   # closes tabPanel("Data Sources") — NO comma, this is the last tab
+  
+)     # closes navbarPage / ui
+  
+
 
 # --- SERVER ---
 server <- function(input, output, session) {
@@ -2232,75 +2267,216 @@ server <- function(input, output, session) {
   )
   
   # Trend plot
-  output$trend_plot <- renderPlot({
+  output$trend_plot <- renderPlotly({
     df <- fib_long %>%
       filter(location_name == input$site_select,
              parameter == input$param_select,
-             between(year(date), input$year_range[1], input$year_range[2]))
+             between(year(date), input$year_range[1], input$year_range[2])) %>%
+      arrange(date) %>%
+      mutate(result_num = as.numeric(result))
     req(nrow(df) > 0)
     
-    ggplot(df, aes(date, result)) +
-      geom_line(color = htb_colors$aqua, linewidth = 1.2) + 
-      geom_point(color = htb_colors$deep_sea, size = 3, alpha = 0.8) +
-      labs(x = "Date", y = "Result (MPN/100mL)", 
-           title = paste("Water Quality at", input$site_select)) + 
-      theme_minimal(base_size = 14) +
-      theme(
-        text = element_text(family = "sans"),
-        plot.title = element_text(color = htb_colors$deep_sea, 
-                                  face = "bold", size = 18),
-        axis.title = element_text(color = htb_colors$coal_gray, face = "bold"),
-        axis.text = element_text(color = htb_colors$coal_gray),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(color = "#e8eaed"),
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
+    use_log <- isTRUE(input$log_y_trend)
+    show_geomean <- isTRUE(input$show_geomean_threshold)
+    show_ssm     <- isTRUE(input$show_ssm_threshold)
+    
+    param_label <- switch(input$param_select,
+                          "total_val"  = "Total Coliform",
+                          "fecal_val"  = "Fecal Coliform",
+                          "entero_val" = "Enterococcus",
+                          input$param_select)
+    
+    # Thresholds per parameter
+    thresholds <- list(
+      total_val  = list(geomean = 1000,  ssm = 10000),
+      fecal_val  = list(geomean = NULL,  ssm = 400),
+      entero_val = list(geomean = 33,    ssm = 104)
+    )
+    thresh <- thresholds[[input$param_select]]
+    
+    p <- plot_ly() %>%
+      add_trace(
+        data = df,
+        x = ~date, y = ~result_num,
+        type = "scatter", mode = "markers",
+        name = param_label,
+        marker = list(
+          color = "rgba(64, 180, 229, 0.45)",
+          size = 5,
+          line = list(color = "rgba(0, 92, 185, 0.3)", width = 0.5)
+        ),
+        hovertemplate = paste0("<b>%{x|%b %d, %Y}</b><br>",
+                               param_label, ": <b>%{y:.0f}</b> MPN/100mL<extra></extra>")
       )
+    
+    # Geomean threshold line
+    if (show_geomean && !is.null(thresh$geomean)) {
+      p <- p %>%
+        add_trace(
+          x = range(df$date),
+          y = c(thresh$geomean, thresh$geomean),
+          type = "scatter", mode = "lines",
+          name = paste0("Geomean Threshold (", thresh$geomean, " MPN/100mL)"),
+          line = list(color = "#F26859", width = 2.5, dash = "dash"),
+          hovertemplate = paste0("Geomean Threshold: <b>", thresh$geomean, "</b> MPN/100mL<extra></extra>")
+        )
+    }
+    
+    # Single sample max threshold line
+    if (show_ssm && !is.null(thresh$ssm)) {
+      p <- p %>%
+        add_trace(
+          x = range(df$date),
+          y = c(thresh$ssm, thresh$ssm),
+          type = "scatter", mode = "lines",
+          name = paste0("Single Sample Max (", thresh$ssm, " MPN/100mL)"),
+          line = list(color = "#FCC755", width = 2.5, dash = "dot"),
+          hovertemplate = paste0("SSM Threshold: <b>", thresh$ssm, "</b> MPN/100mL<extra></extra>")
+        )
+    }
+    
+    p %>%
+      layout(
+        title = list(
+          text = paste0("<b>Water Quality at<br>", input$site_select, "</b>"),
+          font = list(family = "Montserrat, sans-serif", size = 16, color = "#0E4C90"),
+          x = 0.02, xanchor = "left"
+        ),
+        xaxis = list(
+          title = list(text = "Date", font = list(family = "Montserrat", size = 13, color = "#263746")),
+          showgrid = TRUE, gridcolor = "#f0f0f0",
+          zeroline = FALSE,
+          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
+          showline = TRUE, linecolor = "#ddd"
+        ),
+        yaxis = list(
+          title = list(text = "Result (MPN/100mL)", font = list(family = "Montserrat", size = 13, color = "#263746")),
+          type = if (use_log) "log" else "linear",
+          showgrid = TRUE, gridcolor = "#f0f0f0",
+          zeroline = FALSE,
+          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
+          showline = TRUE, linecolor = "#ddd"
+        ),
+        legend = list(
+          orientation = "h", x = 0, y = -0.18,
+          font = list(family = "Source Sans Pro", size = 12),
+          bgcolor = "rgba(0,0,0,0)"
+        ),
+        paper_bgcolor = "white",
+        plot_bgcolor  = "#fafbfc",
+        margin = list(t = 80, r = 30, b = 80, l = 80),
+        hovermode = "x unified",
+        font = list(family = "Source Sans Pro, sans-serif")
+      ) %>%
+      config(displayModeBar = TRUE,
+             modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"),
+             displaylogo = FALSE)
   })
-  
-  # Seasonal plot
-  output$seasonal_plot <- renderPlot({
+  # Seasonal plot — Wet vs Dry only
+  output$seasonal_plot <- renderPlotly({
     df <- fib_long %>%
       filter(location_name == input$site_select,
              parameter == input$param_select,
-             between(year(date), input$year_range[1], input$year_range[2]))
+             between(year(date), input$year_range[1], input$year_range[2])) %>%
+      mutate(result_num = as.numeric(result))
     req(nrow(df) > 0)
     
-    seasonal_colors <- c(
-      "Winter" = htb_colors$deep_sea,
-      "Spring" = htb_colors$algae,
-      "Summer" = htb_colors$sunshine,
-      "Fall" = htb_colors$garibaldi
+    use_log <- isTRUE(input$log_y_seasonal)
+    
+    param_label <- switch(input$param_select,
+                          "total_val"  = "Total Coliform",
+                          "fecal_val"  = "Fecal Coliform",
+                          "entero_val" = "Enterococcus",
+                          input$param_select)
+    
+    seasonal_df <- df %>%
+      mutate(season = factor(
+        ifelse(month(date) %in% c(11, 12, 1, 2, 3, 4),
+               "Wet Season\n(Nov-Apr)", "Dry Season\n(May-Oct)"),
+        levels = c("Wet Season\n(Nov-Apr)", "Dry Season\n(May-Oct)")
+      )) %>%
+      group_by(season) %>%
+      summarise(
+        avg    = mean(result_num, na.rm = TRUE),
+        median = median(result_num, na.rm = TRUE),
+        n      = n(),
+        .groups = "drop"
+      )
+    
+    season_colors <- c(
+      "Wet Season\n(Nov-Apr)" = "#005CB9",
+      "Dry Season\n(May-Oct)" = "#F47E48"
     )
     
-    df %>%
-      mutate(season = factor(case_when(
-        month(date) %in% c(12,1,2) ~ "Winter",
-        month(date) %in% c(3,4,5) ~ "Spring",
-        month(date) %in% c(6,7,8) ~ "Summer",
-        TRUE ~ "Fall"
-      ), levels = c("Winter", "Spring", "Summer", "Fall"))) %>%
-      group_by(season) %>%
-      summarise(avg = mean(as.numeric(result), na.rm = TRUE)) %>%
-      ggplot(aes(season, avg, fill = season)) +
-      geom_col(show.legend = FALSE, width = 0.7) +
-      scale_fill_manual(values = seasonal_colors) +
-      labs(x = "Season", y = "Average Result (MPN/100mL)",
-           title = "Seasonal Water Quality Patterns") +
-      theme_minimal(base_size = 14) +
-      theme(
-        text = element_text(family = "sans"),
-        plot.title = element_text(color = htb_colors$deep_sea, 
-                                  face = "bold", size = 18),
-        axis.title = element_text(color = htb_colors$coal_gray, face = "bold"),
-        axis.text = element_text(color = htb_colors$coal_gray),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_line(color = "#e8eaed"),
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
+    # Annotation label for each bar
+    bar_labels <- paste0(
+      "<b>", round(seasonal_df$avg, 0), "</b> MPN/100mL<br>",
+      "median: ", round(seasonal_df$median, 0), "<br>",
+      "n = ", seasonal_df$n
+    )
+    
+    plot_ly(seasonal_df,
+            x = ~season,
+            y = ~avg,
+            type = "bar",
+            width = 0.4,
+            marker = list(
+              color = unname(season_colors[as.character(seasonal_df$season)]),
+              line  = list(color = "white", width = 2),
+              opacity = 0.88
+            ),
+            text = bar_labels,
+            textposition = "auto",
+            insidetextfont = list(color = "white", family = "Montserrat", size = 13),
+            outsidetextfont = list(color = "#263746", family = "Montserrat", size = 13),
+            hovertemplate = paste0(
+              "<b>%{x}</b><br>",
+              "Mean: <b>%{y:.0f}</b> MPN/100mL<br>",
+              "Median: <b>%{customdata[0]:.0f}</b> MPN/100mL<br>",
+              "n = %{customdata[1]} samples<extra></extra>"
+            ),
+            customdata = ~cbind(median, n)
+    ) %>%
+      layout(
+        title = list(
+          text = paste0("<b>Wet vs. Dry Season</b><br>",
+                        "<span style='font-size:13px; color:#666;'>",
+                        param_label, " at ", input$site_select, "</span>"),
+          font = list(family = "Montserrat, sans-serif", size = 17, color = "#0E4C90"),
+          x = 0.02, xanchor = "left"
+        ),
+        xaxis = list(
+          title = "",
+          showgrid = FALSE,
+          zeroline = FALSE,
+          tickfont = list(family = "Montserrat", color = "#263746", size = 15),
+          fixedrange = TRUE
+        ),
+        yaxis = list(
+          title = list(
+            text = paste0("Mean ", param_label, " (MPN/100mL)"),
+            font = list(family = "Montserrat", size = 13, color = "#263746")
+          ),
+          type = if (use_log) "log" else "linear",
+          showgrid = TRUE, gridcolor = "#f0f0f0", gridwidth = 1,
+          zeroline = FALSE,
+          tickfont = list(family = "Source Sans Pro", color = "#555", size = 12),
+          showline = FALSE
+        ),
+        paper_bgcolor = "white",
+        plot_bgcolor  = "#fafbfc",
+        bargap = 0.55,
+        margin = list(t = 100, r = 60, b = 60, l = 90),
+        font = list(family = "Source Sans Pro, sans-serif"),
+        shapes = list(
+          list(type = "line", x0 = -0.5, x1 = 1.5,
+               y0 = 0, y1 = 0,
+               line = list(color = "#ddd", width = 1))
+        )
+      ) %>%
+      config(displayModeBar = FALSE)
   })
+  
   
   # Download handler for FIB data
   output$download_fib_data <- downloadHandler(
