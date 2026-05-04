@@ -1995,7 +1995,7 @@ ui <- navbarPage(
                               https://egis-lacounty.hub.arcgis.com/datasets/93bb7c1a5480466499195c5bc7cd0b81_0/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://egis-lacounty.hub.arcgis.com/datasets/93bb7c1a5480466499195c5bc7cd0b81_0/explore",
+                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore?location=34.052421%2C-118.348111%2C12",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
@@ -2022,7 +2022,7 @@ ui <- navbarPage(
                               https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore",
+                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore?location=34.052421%2C-118.348111%2C12",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
@@ -2142,7 +2142,7 @@ ui <- navbarPage(
                               https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore",
+                                 tags$a(href="https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
