@@ -1356,7 +1356,7 @@ ui <- navbarPage(
                                   tags$a(href = "mailto:lkhosravi@ucsb.edu",
                                          style = "color: #00B6B6; font-size: 11.5px; text-decoration: none;",
                                          icon("envelope", style = "margin-right: 4px;"),
-                                         "lkhosravi@ucsb.edu")
+                                         "lkhosravi@bren.ucsb.edu")
                               )
                        ),
                        column(4,
