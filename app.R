@@ -7,14 +7,10 @@ library(bslib)
 library(lubridate)
 library(DT)
 library(scales)
-library(tigris)
 
 # Helpful while debugging crashes:
 options(shiny.fullstacktrace = TRUE)
 options(shiny.sanitize.errors = FALSE)
-
-# tigris caching to avoid re-downloading on every restart
-options(tigris_use_cache = TRUE)
 
 # --- Helper functions (define ONCE, near the top) ---
 pick_col <- function(df, candidates, fallback = NULL) {
@@ -166,23 +162,10 @@ dac_data <- read_csv("data/la_dac_tracts.csv", show_col_types = FALSE) %>%
   )
 
 # --- Load LA County Census Tract Geometries for DAC Polygons ---
-# Uses tigris with caching; falls back gracefully if unavailable
+# Reads pre-built la_tracts.gpkg bundled in data/ — no runtime Census API call needed.
+# To regenerate locally: run the one-liner in the README, then re-deploy.
 la_tracts <- tryCatch({
-  tracts_path <- "data/la_tracts.gpkg"
-  
-  if (file.exists(tracts_path)) {
-    # Load from local cache first (fastest, avoids Census API at startup)
-    message("Loading LA census tracts from local cache...")
-    sf::read_sf(tracts_path)
-  } else {
-    message("Downloading LA census tracts from Census API (one-time)...")
-    tr <- tigris::tracts(state = "CA", county = "Los Angeles", year = 2020, cb = TRUE) %>%
-      st_transform(4326) %>%
-      select(GEOID, geometry)
-    # Save locally so future startups skip the download
-    sf::write_sf(tr, tracts_path)
-    tr
-  }
+  sf::read_sf("data/la_tracts.gpkg")
 }, error = function(e) {
   message("Census tract load failed: ", e$message, " — DAC will fall back to points.")
   NULL
