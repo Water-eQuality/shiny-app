@@ -7,11 +7,14 @@ library(bslib)
 library(lubridate)
 library(DT)
 library(scales)
-
+library(tigris)
 
 # Helpful while debugging crashes:
 options(shiny.fullstacktrace = TRUE)
 options(shiny.sanitize.errors = FALSE)
+
+# tigris caching to avoid re-downloading on every restart
+options(tigris_use_cache = TRUE)
 
 # --- Helper functions (define ONCE, near the top) ---
 pick_col <- function(df, candidates, fallback = NULL) {
@@ -139,6 +142,8 @@ dac_data <- read_csv("data/la_dac_tracts.csv", show_col_types = FALSE) %>%
     lat = as.numeric(lat),
     lon = as.numeric(lon),
     ces_percentile = as.numeric(ces_percentile),
+    # Normalize tract_id to 11-digit GEOID for joining to Census geometries
+    tract_id_geo = str_pad(as.character(tract_id), 11, pad = "0"),
     # Simplify DAC category names for display
     dac_category_short = case_when(
       str_detect(dac_category, "Top 25%") ~ "CES 4.0 Top 25%",
@@ -158,14 +163,59 @@ dac_data <- read_csv("data/la_dac_tracts.csv", show_col_types = FALSE) %>%
     # Format for popup
     ces_score_fmt = round(as.numeric(ces_score), 1),
     population_fmt = format(as.numeric(population), big.mark = ",")
-  ) %>%
-  filter(!is.na(lat), !is.na(lon))
+  )
 
-# Create sf object for DAC points
-dac_pts <- dac_data %>%
+# --- Load LA County Census Tract Geometries for DAC Polygons ---
+# Uses tigris with caching; falls back gracefully if unavailable
+la_tracts <- tryCatch({
+  tracts_path <- "data/la_tracts.gpkg"
+  
+  if (file.exists(tracts_path)) {
+    # Load from local cache first (fastest, avoids Census API at startup)
+    message("Loading LA census tracts from local cache...")
+    sf::read_sf(tracts_path)
+  } else {
+    message("Downloading LA census tracts from Census API (one-time)...")
+    tr <- tigris::tracts(state = "CA", county = "Los Angeles", year = 2020, cb = TRUE) %>%
+      st_transform(4326) %>%
+      select(GEOID, geometry)
+    # Save locally so future startups skip the download
+    sf::write_sf(tr, tracts_path)
+    tr
+  }
+}, error = function(e) {
+  message("Census tract load failed: ", e$message, " — DAC will fall back to points.")
+  NULL
+})
+
+# --- Join DAC attributes to tract polygons ---
+dac_polys <- tryCatch({
+  if (is.null(la_tracts)) stop("No tract geometries available")
+  
+  joined <- dac_data %>%
+    inner_join(la_tracts, by = c("tract_id_geo" = "GEOID")) %>%
+    st_as_sf() %>%
+    # Simplify slightly for Leaflet performance (cb=TRUE is already simplified,
+    # but a light additional pass helps when rendering 500+ polygons)
+    st_simplify(dTolerance = 0.0001, preserveTopology = TRUE) %>%
+    st_make_valid() %>%
+    filter(!st_is_empty(st_geometry(.)))
+  
+  message("DAC polygons created: ", nrow(joined), " tracts")
+  joined
+}, error = function(e) {
+  message("DAC polygon join failed: ", e$message, " — falling back to points.")
+  NULL
+})
+
+# Fallback: point sf object if polygon join failed
+dac_pts_fallback <- dac_data %>%
+  filter(!is.na(lat), !is.na(lon)) %>%
   validate_latlon(lat = "lat", lon = "lon") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
+# Use polygons if available, otherwise points
+use_dac_polys <- !is.null(dac_polys) && nrow(dac_polys) > 0
 
 # Get unique DAC categories for filtering
 dac_categories <- sort(unique(dac_data$dac_category_short))
@@ -222,7 +272,6 @@ lausd_parcels <- tryCatch({
     x <- sf::st_cast(x, "MULTIPOLYGON", warn = FALSE)
   }
   
-  # Explode geometry collections, keep only polygon types, recast
   x
 }, error = function(e) {
   message("LAUSD parcels load failed: ", e$message)
@@ -241,24 +290,20 @@ park_polygons <- tryCatch({
   if (is.na(sf::st_crs(x))) sf::st_crs(x) <- 3310
   
   x <- x %>%
-    # Fix validity BEFORE any casting or transforming
     sf::st_buffer(0) %>%                    
     sf::st_make_valid() %>%
     dplyr::filter(!sf::st_is_empty(sf::st_geometry(.))) %>%
     sf::st_transform(4326) %>%
     sf::st_zm(drop = TRUE, what = "ZM") %>%
-    # Fix again after transform
     sf::st_make_valid() %>%
     dplyr::filter(!sf::st_is_empty(sf::st_geometry(.))) %>%
     sf::st_simplify(dTolerance = 0.0003, preserveTopology = TRUE) %>%
     sf::st_make_valid() %>%
     dplyr::filter(!sf::st_is_empty(sf::st_geometry(.)))
   
-  # Safe cast: only touch polygon types, skip anything else
   geom_types <- sf::st_geometry_type(x)
   x <- x[geom_types %in% c("POLYGON", "MULTIPOLYGON"), ]
   
-  # Cast row by row to avoid one bad geometry killing the whole layer
   x <- tryCatch(
     sf::st_cast(x, "MULTIPOLYGON", warn = FALSE),
     error = function(e) {
@@ -285,23 +330,23 @@ stormwater_pts <- combined_projects %>%
 # Get unique project types for filtering
 project_types <- sort(unique(combined_projects$project_type_clean))
 
-# Legacy project points (keeping for backwards compatibility if needed)
+# Legacy project points
 projects_pts <- projects_data %>%
   rename(lat = Latitude, lon = Longitude, name = `Project Name`) %>%
-  mutate(lat = as.numeric(lat), lon = as.numeric(lon)) %>%   # ensure numeric
-  validate_latlon(lat = "lat", lon = "lon") %>%              # stronger than filter(!is.na)
+  mutate(lat = as.numeric(lat), lon = as.numeric(lon)) %>%
+  validate_latlon(lat = "lat", lon = "lon") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
 # WRAMPS project points
 wramps_pts <- read_csv("data/wramps_clean.csv", show_col_types = FALSE) %>%
   rename(lat = Latitude, lon = Longitude, name = project) %>%
   mutate(lat = as.numeric(lat), lon = as.numeric(lon)) %>%
-  validate_latlon(lat = "lat", lon = "lon") %>%              # replaces filter(!is.na)
+  validate_latlon(lat = "lat", lon = "lon") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
 # Monitoring sites points
 monitoring_sites_pts <- site_info %>%
-  mutate(lat = as.numeric(lat), lon = as.numeric(lon)) %>%   # safe guard
+  mutate(lat = as.numeric(lat), lon = as.numeric(lon)) %>%
   validate_latlon(lat = "lat", lon = "lon") %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 
@@ -333,7 +378,7 @@ la_prec_stations_pts <- {
       lat  = suppressWarnings(as.numeric(.data[[lat_col]])),
       lon  = suppressWarnings(as.numeric(.data[[lon_col]]))
     ) %>%
-    validate_latlon(lat = "lat", lon = "lon") %>%            # replaces filter(!is.na)
+    validate_latlon(lat = "lat", lon = "lon") %>%
     st_as_sf(coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 }
 
@@ -1082,7 +1127,6 @@ app_theme <- bs_theme(
   info = "#40B4E5",
   warning = "#FCC755",
   danger = "#F26859",
-  # use plain font family strings (works on older bslib)
   base_font = "Source Sans Pro",
   heading_font = "Montserrat",
   font_scale = 1.05,
@@ -1112,11 +1156,10 @@ ui <- navbarPage(
   tabPanel("Overview",
            fluidPage(
              
-             # ── Hero ─────────────────────────────────────────────────────────
+             # Hero
              div(class = "welcome-section",
                  style = "padding: 2.5rem 3rem; border-radius: 16px;",
                  fluidRow(
-                   # Left: title + body + button
                    column(8,
                           h2("Evaluating Equity & Efficacy of LA County Stormwater Capture",
                              style = "font-size: 23px; font-weight: 700; line-height: 1.35;
@@ -1147,7 +1190,6 @@ ui <- navbarPage(
                                  icon("external-link-alt", style = "margin-right: 6px;"),
                                  "Read Full Report")
                    ),
-                   # Right: stat cards
                    column(4,
                           div(style = "display: flex; flex-direction: column; gap: 0.85rem;
                                   padding-left: 1rem;",
@@ -1183,39 +1225,114 @@ ui <- navbarPage(
                  )
              ),
              
-             # ── Feature cards ─────────────────────────────────────────────────
+             # Feature cards - clickable, navigate to respective tabs
+             tags$script(HTML("
+               function goToTab(tabName) {
+                 var tabs = document.querySelectorAll(\'.navbar-nav .nav-link\');
+                 tabs.forEach(function(t) {
+                   if (t.textContent.trim() === tabName) { t.click(); }
+                 });
+               }
+             ")),
              fluidRow(style = "margin-top: 1.5rem;",
                       column(4,
                              div(class = "feature-card",
+                                 style = "cursor: pointer;",
+                                 onclick = "goToTab(\'Map\')",
                                  div(class = "feature-icon", icon("map-marked-alt")),
                                  h4("Interactive Map"),
                                  p("Explore stormwater projects, park and school parcels, disadvantaged
-                        communities, monitoring sites, and watershed boundaries across LA County.")
+                        communities, monitoring sites, and watershed boundaries across LA County."),
+                                 div(style = "margin-top: 1rem;",
+                                     span(style = "font-size: 0.8rem; font-weight: 700; color: #00B6B6;
+                                                   font-family: Montserrat, sans-serif; text-transform: uppercase;
+                                                   letter-spacing: 0.5px;",
+                                          "Open Map ", icon("arrow-right", style = "font-size: 0.75rem;")))
                              )
                       ),
                       column(4,
                              div(class = "feature-card accent-algae",
+                                 style = "cursor: pointer;",
+                                 onclick = "goToTab(\'Trends\')",
                                  div(class = "feature-icon icon-algae", icon("chart-line")),
                                  h4("Water Quality Trends"),
                                  p("Visualize FIB concentrations over time and compare wet vs. dry season
-                        patterns at beach monitoring sites throughout LA County.")
+                        patterns at beach monitoring sites throughout LA County."),
+                                 div(style = "margin-top: 1rem;",
+                                     span(style = "font-size: 0.8rem; font-weight: 700; color: #90B83E;
+                                                   font-family: Montserrat, sans-serif; text-transform: uppercase;
+                                                   letter-spacing: 0.5px;",
+                                          "View Trends ", icon("arrow-right", style = "font-size: 0.75rem;")))
                              )
                       ),
                       column(4,
                              div(class = "feature-card accent-sunset",
+                                 style = "cursor: pointer;",
+                                 onclick = "goToTab(\'Data Sources\')",
                                  div(class = "feature-icon icon-sunset", icon("database")),
                                  h4("Data Sources"),
                                  p("Full citations and direct links to all datasets — stormwater projects,
-                        DAC designations, parcels, park boundaries, and beach monitoring data.")
+                        DAC designations, parcels, park boundaries, and beach monitoring data."),
+                                 div(style = "margin-top: 1rem;",
+                                     span(style = "font-size: 0.8rem; font-weight: 700; color: #F26859;
+                                                   font-family: Montserrat, sans-serif; text-transform: uppercase;
+                                                   letter-spacing: 0.5px;",
+                                          "View Sources ", icon("arrow-right", style = "font-size: 0.75rem;")))
                              )
                       )
              ),
              
-             # ── Methods note ──────────────────────────────────────────────────
-             # ── Contact form ──────────────────────────────────────────────────
+             # Citation block on Overview page
              div(style = "margin-top: 1.5rem; border-radius: 12px; overflow: hidden;
                            box-shadow: 0 2px 15px rgba(0,0,0,0.08);",
-                 # Teal header bar
+                 div(style = "background: #0E4C90; padding: 1.1rem 1.75rem;
+                               display: flex; align-items: center; gap: 0.75rem;",
+                     icon("quote-right", style = "color: white; font-size: 1.1rem;"),
+                     div(
+                       div(style = "font-family: Montserrat, sans-serif; font-weight: 700;
+                                    color: white; font-size: 1rem; letter-spacing: 0.3px;",
+                           "Cite This Work"),
+                       div(style = "font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px;",
+                           "Use the citation below to reference this dashboard or the associated report.")
+                     )
+                 ),
+                 div(style = "background: #f8fafa; padding: 1.25rem 1.75rem;
+                               display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;",
+                     div(style = "flex: 1; min-width: 280px; background: white;
+                                  border-left: 5px solid #00B6B6; border-radius: 0 10px 10px 0;
+                                  padding: 0.9rem 1.2rem; font-size: 0.88rem; line-height: 1.75;
+                                  color: #263746; box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
+                         HTML("Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., &amp; Tran, T. (2026).
+                               <em>Water (e)Quality: Evaluating Equity and Efficacy of LA County&#39;s Stormwater
+                               Capture Projects</em> (v1.0.0). Zenodo.
+                               <a href=\'https://doi.org/10.5281/zenodo.20076210\' target=\'_blank\'
+                                  style=\'color:#005CB9; font-weight:600;\'>
+                               https://doi.org/10.5281/zenodo.20076210</a>")
+                     ),
+                     div(style = "display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;",
+                         downloadButton("download_citation_txt2",
+                                        label = tagList(icon("file-alt", style = "margin-right:6px;"), "Download .txt"),
+                                        style = "background: #00B6B6; color: white; border: none;
+                                                 border-radius: 8px; padding: 0.5rem 1.1rem;
+                                                 font-weight: 700; font-size: 0.78rem;
+                                                 font-family: Montserrat, sans-serif;
+                                                 letter-spacing: 0.5px; text-transform: uppercase;
+                                                 display: inline-flex; align-items: center; cursor: pointer; width: 100%;"),
+                         downloadButton("download_citation_bib2",
+                                        label = tagList(icon("graduation-cap", style = "margin-right:6px;"), "Download .bib"),
+                                        style = "background: #0E4C90; color: white; border: none;
+                                                 border-radius: 8px; padding: 0.5rem 1.1rem;
+                                                 font-weight: 700; font-size: 0.78rem;
+                                                 font-family: Montserrat, sans-serif;
+                                                 letter-spacing: 0.5px; text-transform: uppercase;
+                                                 display: inline-flex; align-items: center; cursor: pointer; width: 100%;")
+                     )
+                 )
+             ),
+             
+             # Contact form
+             div(style = "margin-top: 1.5rem; border-radius: 12px; overflow: hidden;
+                           box-shadow: 0 2px 15px rgba(0,0,0,0.08);",
                  div(style = "background: #00B6B6; padding: 1.1rem 1.75rem;
                                display: flex; align-items: center; gap: 0.75rem;",
                      icon("paper-plane", style = "color: white; font-size: 1.1rem;"),
@@ -1227,7 +1344,6 @@ ui <- navbarPage(
                            "Have a question about this dashboard or our findings? Send us a message.")
                      )
                  ),
-                 # Form body
                  div(style = "background: #f8fafa; padding: 1.5rem 1.75rem;",
                      fluidRow(
                        column(6,
@@ -1293,10 +1409,9 @@ ui <- navbarPage(
                  )
              ),
              
-             # ── Team section ──────────────────────────────────────────────────
+             # Team section
              div(style = "margin-top: 1.25rem; border-radius: 12px; overflow: hidden;
                            box-shadow: 0 2px 15px rgba(0,0,0,0.08);",
-                 # Header bar
                  div(style = "background: #0E4C90; padding: 1.1rem 1.75rem;
                                display: flex; align-items: center; gap: 0.75rem;",
                      icon("users", style = "color: white; font-size: 1.1rem;"),
@@ -1308,11 +1423,9 @@ ui <- navbarPage(
                            "UCSB Bren School of Environmental Science & Management, 2026")
                      )
                  ),
-                 # Team grid
                  div(style = "background: #f0f4f8; padding: 1.5rem 1.75rem;",
                      fluidRow(
                        column(4,
-                              # Claire
                               div(style = "background: white; border-radius: 10px; padding: 1rem 1.25rem;
                                        margin-bottom: 0.85rem; border-left: 4px solid #00B6B6;
                                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
@@ -1323,7 +1436,6 @@ ui <- navbarPage(
                                          icon("envelope", style = "margin-right: 4px;"),
                                          "claire_anderson@bren.ucsb.edu")
                               ),
-                              # Samuel
                               div(style = "background: white; border-radius: 10px; padding: 1rem 1.25rem;
                                        border-left: 4px solid #00B6B6;
                                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
@@ -1336,7 +1448,6 @@ ui <- navbarPage(
                               )
                        ),
                        column(4,
-                              # Nico
                               div(style = "background: white; border-radius: 10px; padding: 1rem 1.25rem;
                                        margin-bottom: 0.85rem; border-left: 4px solid #90B83E;
                                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
@@ -1347,7 +1458,6 @@ ui <- navbarPage(
                                          icon("envelope", style = "margin-right: 4px;"),
                                          "nicogavigan@bren.ucsb.edu")
                               ),
-                              # Lili
                               div(style = "background: white; border-radius: 10px; padding: 1rem 1.25rem;
                                        border-left: 4px solid #90B83E;
                                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
@@ -1360,7 +1470,6 @@ ui <- navbarPage(
                               )
                        ),
                        column(4,
-                              # Tina
                               div(style = "background: white; border-radius: 10px; padding: 1rem 1.25rem;
                                        border-left: 4px solid #F47E48;
                                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);",
@@ -1381,7 +1490,6 @@ ui <- navbarPage(
   # Map Tab
   tabPanel("Map",
            fluidPage(
-             # Header row
              fluidRow(
                column(12,
                       h2("Map View: Stormwater Projects & Monitoring Sites"),
@@ -1418,8 +1526,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          
-                          # --- DAC Filter (collapsible) ---
+                          # DAC Filter (collapsible)
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1433,11 +1540,10 @@ ui <- navbarPage(
                             div(style = "padding-top: 0.75rem;",
                                 div(class = "info-box accent-sunset", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
                                     p(HTML("<strong>About this filter:</strong> Disadvantaged communities are identified 
-                        using <strong>CalEnviroScreen 4.0</strong> scores, developed by the California 
-                        Office of Environmental Health Hazard Assessment (OEHHA). Under <strong>SB 535</strong>, 
+                        using <strong>CalEnviroScreen 4.0</strong> scores. Under <strong>SB 535</strong>, 
                         CalEPA designates these communities based on geographic, socioeconomic, public 
                         health, and environmental hazard criteria. Higher percentiles indicate greater 
-                        cumulative pollution burden."),
+                        cumulative pollution burden. Communities are shown as <strong>census tract polygons</strong>."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.5;")
                                 ),
                                 p("Filter by CES 4.0 percentile:", 
@@ -1468,7 +1574,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # --- Project Type Filter (collapsible) ---
+                          # Project Type Filter (collapsible)
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1484,8 +1590,7 @@ ui <- navbarPage(
                                     p(HTML("<strong>About this filter:</strong> Stormwater capture projects are categorized 
                         by infrastructure type. Projects range from small-scale <strong>green streets</strong> 
                         and <strong>bioretention</strong> cells to large <strong>regional infiltration</strong> 
-                        facilities and <strong>treatment systems</strong>. Each type captures, treats, or 
-                        diverts stormwater runoff to reduce pollution and replenish groundwater."),
+                        facilities and <strong>treatment systems</strong>."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.5;")
                                 ),
                                 p("Filter stormwater projects by type:", 
@@ -1524,7 +1629,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # --- Completion Year Filter ---
+                          # Completion Year Filter
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1538,8 +1643,7 @@ ui <- navbarPage(
                             div(style = "padding-top: 0.75rem;",
                                 div(class = "info-box accent-algae", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
                                     p(HTML("<strong>About this filter:</strong> Filter stormwater capture projects 
-                        by their actual completion date. Use the slider to focus on 
-                        projects completed within a specific year range."),
+                        by their actual completion date."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.5;")
                                 ),
                                 sliderInput("completion_year_range", NULL,
@@ -1552,7 +1656,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # --- Park Polygons Info (collapsible) ---
+                          # Park Polygons (collapsible)
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1567,9 +1671,7 @@ ui <- navbarPage(
                                 div(class = "info-box accent-algae", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
                                     p(HTML("<strong>About this layer:</strong> This project generated recommendations 
                         for stormwater capture project implementation at <strong>over 100 parks</strong> 
-                        across LA County, highlighting parcels in ArcGIS and generating land use 
-                        graphs using WMMS 2.0. More information on recommended parcels and selection 
-                        methodology can be found 
+                        across LA County. More information can be found 
                         <a href='https://bren.ucsb.edu/projects/evaluating-equity-and-efficacy-los-angeles-countys-stormwater-capture-projects' 
                         target='_blank' style='color: #005CB9; font-weight: 600;'>in our full report</a>."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.6;")
@@ -1585,7 +1687,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # --- LAUSD School Parcels Info (collapsible) ---
+                          # LAUSD School Parcels (collapsible)
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1600,10 +1702,7 @@ ui <- navbarPage(
                                 div(class = "info-box accent-sunset", style = "margin-bottom: 0.85rem; padding: 0.85rem 1rem;",
                                     p(HTML("<strong>About this layer:</strong> This project generated recommendations 
                         for stormwater capture project implementation at <strong>over 400 schools</strong> 
-                        across LAUSD, highlighting parcels in ArcGIS and generating land use 
-                        graphs using WMMS 2.0. School parcels are shown as polygons representing 
-                        campus footprints. More information on recommended parcels and selection 
-                        methodology can be found 
+                        across LAUSD. More information can be found 
                         <a href='https://bren.ucsb.edu/projects/evaluating-equity-and-efficacy-los-angeles-countys-stormwater-capture-projects' 
                         target='_blank' style='color: #005CB9; font-weight: 600;'>in our full report</a>."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.6;")
@@ -1619,7 +1718,7 @@ ui <- navbarPage(
                           
                           hr(style = "border-color: #e0e0e0; margin: 1rem 0;"),
                           
-                          # --- Watershed Filter (collapsible) ---
+                          # Watershed Filter (collapsible)
                           tags$details(
                             tags$summary(
                               style = "cursor: pointer; font-size: 13px; font-weight: 700;
@@ -1635,8 +1734,7 @@ ui <- navbarPage(
                                     p(HTML("<strong>About this filter:</strong> Watersheds define the land area that drains 
                         to a common outlet. LA County spans multiple major watersheds including the 
                         <strong>LA River</strong>, <strong>Ballona Creek</strong>, and <strong>San Gabriel River</strong> 
-                        systems. Filtering by watershed helps identify which stormwater projects and 
-                        monitoring sites fall within a given drainage area."),
+                        systems."),
                                       style = "margin: 0; font-size: 11px; line-height: 1.5;")
                                 ),
                                 uiOutput("watershed_filter_ui")
@@ -1647,7 +1745,7 @@ ui <- navbarPage(
                
                # Map display column
                column(9,
-                      # Legend bar above the map
+                      # Legend bar
                       div(
                         style = "background: white; padding: 1rem 1.5rem; border-radius: 12px 12px 0 0;
            box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-top: 4px solid #FCC755;",
@@ -1660,7 +1758,6 @@ ui <- navbarPage(
                         
                         div(style = "display: flex; flex-wrap: wrap; gap: 0.6rem;",
                             
-                            # Point layers
                             div(style = "display: flex; align-items: center; background: #f8f9fa;
                    border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
                                 span(style = paste0("width: 16px; height: 16px; border-radius: 50%;
@@ -1738,15 +1835,15 @@ ui <- navbarPage(
                                 )
                             ),
                             
-                            # DAC gradient pill
+                            # DAC gradient pill — updated label to show tracts
                             div(style = "display: flex; align-items: center; background: #f8f9fa;
                    border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
                                 span(style = "width: 32px; height: 16px; border-radius: 4px; flex-shrink: 0;
                background: linear-gradient(to right, #fc8d59, #d73027);
                border: 1px solid #ccc; display: inline-block;"),
                                 div(
-                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "DAC"),
-                                  div(style = "font-size: 10px; color: #888;", "75% to 100% CES")
+                                  div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "DAC Tracts"),
+                                  div(style = "font-size: 10px; color: #888;", "75–100% CES")
                                 )
                             )
                         )
@@ -1846,8 +1943,7 @@ ui <- navbarPage(
                                                 ),
                                                 value = FALSE),
                                   p(HTML("Enables a <strong>logarithmic scale</strong> on the Y-axis. 
-                                    Useful when a few extreme values compress the rest of the data, 
-                                    making low-concentration readings easier to read alongside spikes."),
+                                    Useful when a few extreme values compress the rest of the data."),
                                     style = "margin: 0; font-size: 11px; color: #555; line-height: 1.5;")
                               )
                           )
@@ -1863,9 +1959,7 @@ ui <- navbarPage(
                                                   "Log\u2081\u2080 Y-axis"
                                                 ),
                                                 value = FALSE),
-                                  p(HTML("Enables a <strong>logarithmic scale</strong> on the Y-axis. 
-                                    Useful when wet and dry season values span several orders of magnitude, 
-                                    making smaller bars easier to read alongside very tall ones."),
+                                  p(HTML("Enables a <strong>logarithmic scale</strong> on the Y-axis."),
                                     style = "margin: 0; font-size: 11px; color: #555; line-height: 1.5;")
                               )
                           )
@@ -1885,7 +1979,6 @@ ui <- navbarPage(
                         to the original sources for transparency and reproducibility."))
              ),
              
-             # helper function for a source card
              # 1. Beach FIB
              fluidRow(column(12,
                              div(class = "feature-card", style = "border-top: 5px solid #40B4E5; margin-bottom: 1.25rem;",
@@ -1897,8 +1990,7 @@ ui <- navbarPage(
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
                                  p("Fecal indicator bacteria (FIB) monitoring results from beaches across Los Angeles County,
-                     including Total Coliform, Fecal Coliform, and Enterococcus measurements used to assess 
-                     recreational water quality and protect public health.",
+                     including Total Coliform, Fecal Coliform, and Enterococcus measurements.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-algae", style="margin:0.75rem 0; padding:0.75rem 1rem;",
                                      p(HTML("California State Water Resources Control Board. <em>Beach Water Quality Monitoring Data.</em>
@@ -1934,8 +2026,7 @@ ui <- navbarPage(
                      the Safe Clean Water Program's watershed reporting system for Los Angeles County.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-algae", style="margin:0.75rem 0;padding:0.75rem 1rem;",
-                                     p(HTML("Safe Clean Water Program. <em>WRAMPS Data.</em> Watershed Reporting Adaptive 
-                              Management & Planning System (WRAMPS). 
+                                     p(HTML("Safe Clean Water Program. <em>WRAMPS Data.</em> 
                               <a href='https://portal.safecleanwaterla.org/wmms/downloads'
                               target='_blank' style='color:#005CB9;'>
                               https://portal.safecleanwaterla.org/wmms/downloads</a>"),
@@ -1948,7 +2039,7 @@ ui <- navbarPage(
                              )
              )),
              
-             # 3. Safe Clean Water FGDB (stormwater projects + watershed boundaries)
+             # 3. Safe Clean Water FGDB
              fluidRow(column(12,
                              div(class="feature-card", style="border-top:5px solid #005CB9;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
@@ -1959,7 +2050,7 @@ ui <- navbarPage(
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
                                  p("File geodatabase containing stormwater infrastructure, project footprints, and watershed 
-                     boundary layers for Los Angeles County, maintained by the LA County Enterprise GIS program.",
+                     boundary layers for Los Angeles County.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box", style="margin:0.75rem 0;padding:0.75rem 1rem;",
                                      p(HTML("Los Angeles County Enterprise GIS (eGIS). <em>Safe Clean Water FGDB 2023.</em> 
@@ -1975,18 +2066,18 @@ ui <- navbarPage(
                              )
              )),
              
-             # 4. LA County eGIS ArcGIS Dataset Explorer (parcels layer)
+             # 4. LA County eGIS
              fluidRow(column(12,
                              div(class="feature-card", style="border-top:5px solid #546122;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
                                      div(class="feature-icon", style="margin-bottom:0;margin-right:1rem;background-color:#546122;", icon("map")),
                                      div(h3("LA County eGIS — ArcGIS Dataset Explorer",
                                             style="margin:0;color:#0E4C90;font-size:1.2rem;"),
-                                         p("Public GIS Layer / Feature Service (93bb7c1a5480466499195c5bc7cd0b81_0)",
+                                         p("Public GIS Layer / Feature Service",
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
                                  p("Public GIS feature layer from the LA County Enterprise GIS hub used for parcel and 
-                     addressing data supporting spatial joins and geographic filtering in this dashboard.",
+                     addressing data supporting spatial joins and geographic filtering.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-algae", style="margin:0.75rem 0;padding:0.75rem 1rem;",
                                      p(HTML("Los Angeles County Enterprise GIS (eGIS). <em>ArcGIS Dataset Explorer.</em> 
@@ -1995,14 +2086,14 @@ ui <- navbarPage(
                               https://egis-lacounty.hub.arcgis.com/datasets/93bb7c1a5480466499195c5bc7cd0b81_0/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore?location=34.052421%2C-118.348111%2C12",
+                                 tags$a(href="https://egis-lacounty.hub.arcgis.com/datasets/93bb7c1a5480466499195c5bc7cd0b81_0/explore",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
                              )
              )),
              
-             # 5. LA County Assessor Publicly Owned Parcels (LAUSD)
+             # 5. LAUSD Parcels
              fluidRow(column(12,
                              div(class="feature-card accent-sunset", style="border-top:5px solid #F47E48;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
@@ -2022,14 +2113,14 @@ ui <- navbarPage(
                               https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore?location=34.052421%2C-118.348111%2C12",
+                                 tags$a(href="https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
                              )
              )),
              
-             # 6. CalEnviroScreen 4.0 + SB 535 DAC
+             # 6. CalEnviroScreen
              fluidRow(column(12,
                              div(class="feature-card accent-sunset", style="border-top:5px solid #F26859;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
@@ -2040,8 +2131,8 @@ ui <- navbarPage(
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
                                  p("CalEnviroScreen 4.0 scores and SB 535 disadvantaged community designations identify 
-                     census tracts with the highest cumulative pollution burden and socioeconomic vulnerability 
-                     across California, used here to assess environmental equity in stormwater project distribution.",
+                     census tracts with the highest cumulative pollution burden and socioeconomic vulnerability. 
+                     DAC tracts are rendered as census tract polygons joined to U.S. Census TIGER geometries.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-sunset", style="margin:0.75rem 0;padding:0.75rem 1rem;",
                                      p(HTML("California Office of Environmental Health Hazard Assessment (OEHHA). 
@@ -2077,11 +2168,10 @@ ui <- navbarPage(
                                          p("TPL ArcGIS Online — LA County Park Boundaries",
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
-                                 p("Park boundary polygon layer for Los Angeles County maintained by the Trust for Public Land,
-                     used to identify park parcels suitable for stormwater capture project implementation.",
+                                 p("Park boundary polygon layer for Los Angeles County maintained by the Trust for Public Land.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-algae", style="margin:0.75rem 0;padding:0.75rem 1rem;",
-                                     p(HTML("The Trust for Public Land (TPL). <em>ArcGIS Online Map Layer / Dataset.</em> Item ID: db5bdb0f0c8c4b85b8270ec67448a0b6. 
+                                     p(HTML("The Trust for Public Land (TPL). <em>ArcGIS Online Map Layer.</em> Item ID: db5bdb0f0c8c4b85b8270ec67448a0b6. 
                               <a href='https://tpl.maps.arcgis.com/home/item.html?id=db5bdb0f0c8c4b85b8270ec67448a0b6'
                               target='_blank' style='color:#005CB9;'>
                               https://tpl.maps.arcgis.com/home/item.html?id=db5bdb0f0c8c4b85b8270ec67448a0b6</a>"),
@@ -2094,58 +2184,88 @@ ui <- navbarPage(
                              )
              )),
              
-             # 8. EPA NPL Superfund
-             fluidRow(column(12,
-                             div(class="feature-card", style="border-top:5px solid #FCC755;margin-bottom:1.25rem;",
-                                 div(style="display:flex;align-items:center;margin-bottom:1rem;",
-                                     div(class="feature-icon", style="margin-bottom:0;margin-right:1rem;background-color:#FCC755;color:#263746;", icon("exclamation-triangle")),
-                                     div(h3("NPL Superfund Site Boundaries",
-                                            style="margin:0;color:#0E4C90;font-size:1.2rem;"),
-                                         p("U.S. EPA — National Priorities List Site Boundaries (EPA10)",
-                                           style="margin:0;color:#666;font-size:0.85rem;"))
-                                 ),
-                                 p("National Priorities List (NPL) Superfund site boundary polygons from the U.S. EPA Region 10,
-                     used to contextualize environmental contamination burden relative to stormwater project locations.",
-                                   style="color:#555;line-height:1.6;font-size:0.9rem;"),
-                                 div(class="info-box accent-sunshine", style="margin:0.75rem 0;padding:0.75rem 1rem;",
-                                     p(HTML("U.S. Environmental Protection Agency (EPA). <em>NPL Superfund Site Boundaries (EPA10).</em> 
-                              Data.gov. 
-                              <a href='https://catalog.data.gov/dataset/npl-superfund-site-boundaries-epa10'
-                              target='_blank' style='color:#005CB9;'>
-                              https://catalog.data.gov/dataset/npl-superfund-site-boundaries-epa10</a>"),
-                                       style="margin:0;font-size:0.85rem;line-height:1.6;")
-                                 ),
-                                 tags$a(href="https://catalog.data.gov/dataset/npl-superfund-site-boundaries-epa10",
-                                        target="_blank", class="btn btn-primary",
-                                        style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
-                                        icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
-                             )
-             )),
-             
-             # 9. City of LA GeoHub
+             # 8. City of LA GeoHub
              fluidRow(column(12,
                              div(class="feature-card", style="border-top:5px solid #8ACFCF;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
                                      div(class="feature-icon", style="margin-bottom:0;margin-right:1rem;background-color:#00B6B6;", icon("city")),
                                      div(h3("City of Los Angeles GeoHub Open Data",
                                             style="margin:0;color:#0E4C90;font-size:1.2rem;"),
-                                         p("LA GeoHub — Feature Service (0b66505e58744fbdb113b34262a9f4fa_2)",
+                                         p("LA GeoHub — Feature Service",
                                            style="margin:0;color:#666;font-size:0.85rem;"))
                                  ),
                                  p("Open data layer from the City of Los Angeles GeoHub portal, providing supplementary 
                      geographic and infrastructure data used in spatial analysis for this dashboard.",
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box", style="margin:0.75rem 0;padding:0.75rem 1rem;",
-                                     p(HTML("City of Los Angeles GeoHub. <em>Open Data Layer.</em> Feature Service: 0b66505e58744fbdb113b34262a9f4fa_2. 
+                                     p(HTML("City of Los Angeles GeoHub. <em>Open Data Layer.</em> 
                               <a href='https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore'
                               target='_blank' style='color:#005CB9;'>
                               https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://data.lacounty.gov/datasets/lacounty::assessor-publicly-owned-parcels-current/explore",
+                                 tags$a(href="https://geohub.lacity.org/datasets/0b66505e58744fbdb113b34262a9f4fa_2/explore",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
+                             )
+             )),
+             
+             # --- Cite This Work ---
+             fluidRow(column(12,
+                             div(style = "border-radius: 12px; overflow: hidden;
+                             box-shadow: 0 2px 15px rgba(0,0,0,0.08); margin-top: 0.5rem; margin-bottom: 2rem;",
+                                 
+                                 # Header bar
+                                 div(style = "background: #0E4C90; padding: 1.1rem 1.75rem;
+                                 display: flex; align-items: center; gap: 0.75rem;",
+                                     icon("quote-right", style = "color: white; font-size: 1.1rem;"),
+                                     div(
+                                       div(style = "font-family: Montserrat, sans-serif; font-weight: 700;
+                                      color: white; font-size: 1rem; letter-spacing: 0.3px;",
+                                           "Cite This Work"),
+                                       div(style = "font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px;",
+                                           "Use the citation below to reference this dashboard or the associated report.")
+                                     )
+                                 ),
+                                 
+                                 # Citation body
+                                 div(style = "background: #f8fafa; padding: 1.5rem 1.75rem;",
+                                     
+                                     # Citation text box
+                                     div(style = "background: white; border-left: 5px solid #00B6B6;
+                                    border-radius: 0 10px 10px 0; padding: 1.1rem 1.4rem;
+                                    font-size: 0.9rem; line-height: 1.8; color: #263746;
+                                    font-family: 'Source Sans Pro', sans-serif;
+                                    box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 1.1rem;",
+                                         HTML("Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., &amp; Tran, T. (2026).
+                                 <em>Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater
+                                 Capture Projects</em> (v1.0.0). Zenodo.
+                                 <a href='https://doi.org/10.5281/zenodo.20076210'
+                                    target='_blank' style='color:#005CB9; font-weight:600;'>
+                                 https://doi.org/10.5281/zenodo.20076210</a>")
+                                     ),
+                                     
+                                     # Download button row
+                                     div(style = "display: flex; gap: 0.75rem; flex-wrap: wrap;",
+                                         downloadButton("download_citation_txt",
+                                                        label = tagList(icon("file-alt", style="margin-right:6px;"), "Download .txt"),
+                                                        style = "background: #00B6B6; color: white; border: none;
+                                                   border-radius: 8px; padding: 0.55rem 1.25rem;
+                                                   font-weight: 700; font-size: 0.8rem;
+                                                   font-family: Montserrat, sans-serif;
+                                                   letter-spacing: 0.5px; text-transform: uppercase;
+                                                   display: inline-flex; align-items: center; cursor: pointer;"),
+                                         downloadButton("download_citation_bib",
+                                                        label = tagList(icon("graduation-cap", style="margin-right:6px;"), "Download .bib"),
+                                                        style = "background: #0E4C90; color: white; border: none;
+                                                   border-radius: 8px; padding: 0.55rem 1.25rem;
+                                                   font-weight: 700; font-size: 0.8rem;
+                                                   font-family: Montserrat, sans-serif;
+                                                   letter-spacing: 0.5px; text-transform: uppercase;
+                                                   display: inline-flex; align-items: center; cursor: pointer;")
+                                     )
+                                 )
                              )
              ))
              
@@ -2158,8 +2278,7 @@ ui <- navbarPage(
 # --- SERVER ---
 server <- function(input, output, session) {
   
-  
-  # Reactive value to store watershed names (handles NULL case)
+  # Reactive value to store watershed names
   watershed_choices <- reactive({
     if (is.null(fixed_ws)) return(character(0))
     sort(unique(fixed_ws$LABEL))
@@ -2183,50 +2302,53 @@ server <- function(input, output, session) {
       )
   })
   
-  # Reactive filtered DAC tracts
+  # Reactive filtered DAC — returns polygons if available, points as fallback
   filtered_dac <- reactive({
     selected_pctls <- input$dac_percentile_filter
     if (is.null(selected_pctls) || length(selected_pctls) == 0) {
-      return(dac_pts[0, ])
+      if (use_dac_polys) return(dac_polys[0, ]) else return(dac_pts_fallback[0, ])
     }
-    dac_pts %>%
-      filter(percentile_bin %in% selected_pctls)
+    if (use_dac_polys) {
+      dac_polys %>% filter(percentile_bin %in% selected_pctls)
+    } else {
+      dac_pts_fallback %>% filter(percentile_bin %in% selected_pctls)
+    }
   })
   
-  # Reactive LAUSD parcels (no filters - show all loaded parcels)
+  # Reactive LAUSD parcels
   filtered_lausd <- reactive({
-    lausd_parcels  # return as-is; NULL handled downstream
+    lausd_parcels
   })
   
   # --- Watershed-aware stat reactives ---
+  
+  # Helper: build ws_union from selected watersheds
+  ws_union_reactive <- reactive({
+    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) return(NULL)
+    selected_ws <- input$selected_watersheds
+    if (is.null(selected_ws) || length(selected_ws) == 0) return(NULL)
+    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
+    if (nrow(ws_filtered) == 0) return(NULL)
+    tryCatch(st_union(ws_filtered), error = function(e) NULL)
+  })
+  
   stormwater_in_ws <- reactive({
     proj <- filtered_stormwater()
-    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) return(proj)
-    
-    selected_ws <- input$selected_watersheds
-    if (is.null(selected_ws) || length(selected_ws) == 0) return(proj[0, ])
-    
-    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
-    if (nrow(ws_filtered) == 0) return(proj[0, ])
-    
+    ws_u <- ws_union_reactive()
+    if (is.null(ws_u)) return(proj[0, ])
     tryCatch(
-      proj[st_within(proj, st_union(ws_filtered), sparse = FALSE)[, 1], ],
+      proj[st_within(proj, ws_u, sparse = FALSE)[, 1], ],
       error = function(e) proj
     )
   })
   
   dac_in_ws <- reactive({
     d <- filtered_dac()
-    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) return(d)
-    
-    selected_ws <- input$selected_watersheds
-    if (is.null(selected_ws) || length(selected_ws) == 0) return(d[0, ])
-    
-    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
-    if (nrow(ws_filtered) == 0) return(d[0, ])
-    
+    ws_u <- ws_union_reactive()
+    if (is.null(ws_u)) return(d[0, ])
+    # Use st_intersects for polygons (a tract may straddle a watershed boundary)
     tryCatch(
-      d[st_within(d, st_union(ws_filtered), sparse = FALSE)[, 1], ],
+      d[st_intersects(d, ws_u, sparse = FALSE)[, 1], ],
       error = function(e) d
     )
   })
@@ -2234,30 +2356,22 @@ server <- function(input, output, session) {
   monitoring_in_ws <- reactive({
     beach <- monitoring_sites_pts
     river <- testing_sites_pts
-    if (is.null(fixed_ws) || nrow(fixed_ws) == 0) {
-      return(list(beach = beach, river = river))
-    }
-    
-    selected_ws <- input$selected_watersheds
-    if (is.null(selected_ws) || length(selected_ws) == 0) {
+    ws_u <- ws_union_reactive()
+    if (is.null(ws_u)) {
       return(list(beach = beach[0, ], river = river[0, ]))
     }
-    
-    ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
-    ws_union <- st_union(ws_filtered)
-    
     beach_filtered <- tryCatch(
-      beach[st_within(beach, ws_union, sparse = FALSE)[, 1], ],
+      beach[st_within(beach, ws_u, sparse = FALSE)[, 1], ],
       error = function(e) beach
     )
     river_filtered <- tryCatch(
-      river[st_within(river, ws_union, sparse = FALSE)[, 1], ],
+      river[st_within(river, ws_u, sparse = FALSE)[, 1], ],
       error = function(e) river
     )
     list(beach = beach_filtered, river = river_filtered)
   })
   
-  # --- Stats outputs (watershed-aware) ---
+  # --- Stats outputs ---
   output$stat_projects <- renderUI({
     n_proj <- nrow(stormwater_in_ws())
     div(
@@ -2276,7 +2390,7 @@ server <- function(input, output, session) {
   
   output$stat_dac <- renderUI({
     n_dac <- nrow(dac_in_ws())
-    total_dac <- nrow(dac_pts)
+    total_dac <- if (use_dac_polys) nrow(dac_polys) else nrow(dac_pts_fallback)
     div(
       div(class = "stat-value", paste0(n_dac, "/", total_dac)),
       div(class = "stat-label", "DAC Tracts")
@@ -2301,7 +2415,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # dynamic watershed filter UI
+  # Dynamic watershed filter UI
   output$watershed_filter_ui <- renderUI({
     ws_names <- watershed_choices()
     if (length(ws_names) == 0) {
@@ -2310,7 +2424,6 @@ server <- function(input, output, session) {
         "No watershed data available"
       ))
     }
-    
     tagList(
       div(style = "max-height: 200px; overflow-y: auto; padding: 0.5rem; 
                    background: #f8f9fa; border-radius: 8px;",
@@ -2359,9 +2472,7 @@ server <- function(input, output, session) {
                              selected = character(0))
   })
   
-  # Park Polygons and LAUSD have no sub-filters; no select/clear observers needed.
-  
-  
+  # Base map (rendered once)
   output$map <- renderLeaflet({
     tryCatch({
       m <- leaflet(options = leafletOptions(preferCanvas = TRUE)) %>%
@@ -2452,29 +2563,22 @@ server <- function(input, output, session) {
     {
       req(input$map_bounds)
       
-      ws_union <- NULL
-      if (!is.null(fixed_ws) && nrow(fixed_ws) > 0) {
-        selected_ws <- input$selected_watersheds
-        if (!is.null(selected_ws) && length(selected_ws) > 0) {
-          ws_filtered <- fixed_ws %>% filter(LABEL %in% selected_ws)
-          if (nrow(ws_filtered) > 0) {
-            ws_union <- tryCatch(st_union(ws_filtered), error = function(e) NULL)
-          }
-        }
-      }
+      ws_u <- ws_union_reactive()
       
-      clip_to_ws <- function(sf_obj) {
-        if (is.null(ws_union) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
+      # Clip point layers to watershed
+      clip_pts_to_ws <- function(sf_obj) {
+        if (is.null(ws_u) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
         tryCatch(
-          sf_obj[st_within(sf_obj, ws_union, sparse = FALSE)[, 1], ],
+          sf_obj[st_within(sf_obj, ws_u, sparse = FALSE)[, 1], ],
           error = function(e) sf_obj
         )
       }
       
+      # Clip polygon layers to watershed (use intersects so edge tracts aren't dropped)
       clip_poly_to_ws <- function(sf_obj) {
-        if (is.null(ws_union) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
+        if (is.null(ws_u) || is.null(sf_obj) || nrow(sf_obj) == 0) return(sf_obj[0, ])
         tryCatch(
-          sf_obj[st_intersects(sf_obj, ws_union, sparse = FALSE)[, 1], ],
+          sf_obj[st_intersects(sf_obj, ws_u, sparse = FALSE)[, 1], ],
           error = function(e) sf_obj
         )
       }
@@ -2495,41 +2599,79 @@ server <- function(input, output, session) {
       
       show <- function(x) isTRUE(x %in% layers)
       
-      # ---- DAC ----
+      # ---- DAC — polygon rendering ----
       if (show("Disadvantaged Communities")) {
-        dac_filtered <- clip_to_ws(filtered_dac())
+        dac_filtered <- clip_poly_to_ws(filtered_dac())
         if (nrow(dac_filtered) > 0) {
           dac_pal <- colorNumeric(
             palette = c("#fc8d59", "#d73027"),
             domain = c(75, 100)
           )
-          proxy %>%
-            addCircleMarkers(
-              data = dac_filtered,
-              lng = ~lon, lat = ~lat,
-              radius = 6,
-              color = "#FFFFFF",
-              fillColor = ~dac_pal(ces_percentile),
-              fillOpacity = 0.7,
-              weight = 1,
-              popup = ~paste0(
-                "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
-                "<div style='background-color: #d73027; color: white; padding: 10px;
-                 margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
-                "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
-                "<table style='font-size: 12px; width: 100%;'>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
-                "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
-                "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
-                "</table></div>"
-              ),
-              group = "Disadvantaged Communities"
-            )
+          
+          if (use_dac_polys) {
+            # Render as filled census tract polygons
+            proxy %>%
+              addPolygons(
+                data = dac_filtered,
+                fillColor = ~dac_pal(ces_percentile),
+                fillOpacity = 0.6,
+                color = "#FFFFFF",
+                weight = 0.5,
+                smoothFactor = 0.5,
+                group = "Disadvantaged Communities",
+                highlightOptions = highlightOptions(
+                  weight = 2,
+                  color = "#263746",
+                  fillOpacity = 0.85,
+                  bringToFront = TRUE
+                ),
+                popup = ~paste0(
+                  "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
+                  "<div style='background-color: #d73027; color: white; padding: 10px;
+                   margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                  "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
+                  "<table style='font-size: 12px; width: 100%;'>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
+                  "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
+                  "</table></div>"
+                )
+              )
+          } else {
+            # Fallback: render as circle markers if polygon join failed
+            proxy %>%
+              addCircleMarkers(
+                data = dac_filtered,
+                lng = ~lon, lat = ~lat,
+                radius = 6,
+                color = "#FFFFFF",
+                fillColor = ~dac_pal(ces_percentile),
+                fillOpacity = 0.7,
+                weight = 1,
+                group = "Disadvantaged Communities",
+                popup = ~paste0(
+                  "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
+                  "<div style='background-color: #d73027; color: white; padding: 10px;
+                   margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
+                  "<strong style='font-family: Montserrat, sans-serif;'>Disadvantaged Community</strong></div>",
+                  "<table style='font-size: 12px; width: 100%;'>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Location:</td><td style='text-align: right;'><b>", location, "</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Census Tract:</td><td style='text-align: right;'>", tract_id, "</td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>ZIP Code:</td><td style='text-align: right;'>", zip, "</td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Population:</td><td style='text-align: right;'>", population_fmt, "</td></tr>",
+                  "<tr><td colspan='2' style='padding-top: 10px; border-top: 1px solid #e0e0e0;'></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>CES 4.0 Score:</td><td style='text-align: right;'><b>", ces_score_fmt, "</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>CES Percentile:</td><td style='text-align: right;'><b>", round(ces_percentile, 1), "%</b></td></tr>",
+                  "<tr><td style='color: #666; padding: 3px 0;'>Category:</td><td style='text-align: right;'>", dac_category_short, "</td></tr>",
+                  "</table></div>"
+                )
+              )
+          }
         }
       }
       
@@ -2568,9 +2710,7 @@ server <- function(input, output, session) {
       # ---- LAUSD Parcels ----
       if (isTRUE(input$show_lausd) && !is.null(lausd_parcels) && nrow(lausd_parcels) > 0) {
         lausd_data <- clip_poly_to_ws(filtered_lausd())
-        if (is.null(lausd_data) || nrow(lausd_data) == 0) {
-          message("LAUSD layer selected but filtered_lausd() returned 0 rows (skipping draw).")
-        } else {
+        if (!is.null(lausd_data) && nrow(lausd_data) > 0) {
           proxy %>%
             addPolygons(
               data = lausd_data,
@@ -2601,7 +2741,7 @@ server <- function(input, output, session) {
       
       # ---- Stormwater projects ----
       if (show("Stormwater Projects")) {
-        proj_data <- clip_to_ws(filtered_stormwater())
+        proj_data <- clip_pts_to_ws(filtered_stormwater())
         if (nrow(proj_data) > 0) {
           proxy %>%
             addCircleMarkers(
@@ -2633,7 +2773,7 @@ server <- function(input, output, session) {
       
       # ---- Beach sites ----
       if (show("Beach Monitoring Sites")) {
-        beach_sites <- clip_to_ws(monitoring_sites_pts)
+        beach_sites <- clip_pts_to_ws(monitoring_sites_pts)
         if (nrow(beach_sites) > 0) {
           proxy %>%
             addCircleMarkers(
@@ -2659,7 +2799,7 @@ server <- function(input, output, session) {
       
       # ---- River sites ----
       if (show("River Monitoring Sites")) {
-        river_sites <- clip_to_ws(testing_sites_pts)
+        river_sites <- clip_pts_to_ws(testing_sites_pts)
         if (nrow(river_sites) > 0) {
           proxy %>%
             addCircleMarkers(
@@ -2685,7 +2825,7 @@ server <- function(input, output, session) {
       
       # ---- Precip stations ----
       if (show("LA County Precip Stations")) {
-        precip_sites <- clip_to_ws(la_prec_stations_pts)
+        precip_sites <- clip_pts_to_ws(la_prec_stations_pts)
         if (nrow(precip_sites) > 0) {
           proxy %>%
             addCircleMarkers(
@@ -2719,7 +2859,6 @@ server <- function(input, output, session) {
     {
       req(input$map_bounds)
       proxy <- leafletProxy("map")
-      
       if ("Watershed Boundaries" %in% input$map_layers) {
         proxy %>% showGroup("Watershed Boundaries")
       } else {
@@ -2874,6 +3013,49 @@ server <- function(input, output, session) {
     
     p
   })
+  
+  # Citation text strings (shared)
+  citation_plain <- paste0(
+    "Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., & Tran, T. (2026).\n",
+    "Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater\n",
+    "Capture Projects (v1.0.0). Zenodo.\n",
+    "https://doi.org/10.5281/zenodo.20076210"
+  )
+  
+  citation_bib <- paste0(
+    "@software{anderson_cervantes_2026_weq,\n",
+    "  author       = {Anderson, Claire and Cervantes, Samuel and\n",
+    "                   Gavigan, Nico and Khosravi, Lili and Tran, Tina},\n",
+    "  title        = {{Water (e)Quality: Evaluating Equity and Efficacy\n",
+    "                   of LA County's Stormwater Capture Projects}},\n",
+    "  year         = 2026,\n",
+    "  publisher    = {Zenodo},\n",
+    "  version      = {v1.0.0},\n",
+    "  doi          = {10.5281/zenodo.20076210},\n",
+    "  url          = {https://doi.org/10.5281/zenodo.20076210}\n",
+    "}"
+  )
+  
+  output$download_citation_txt <- downloadHandler(
+    filename = function() "water_equality_citation.txt",
+    content  = function(file) writeLines(citation_plain, file)
+  )
+  
+  output$download_citation_bib <- downloadHandler(
+    filename = function() "water_equality_citation.bib",
+    content  = function(file) writeLines(citation_bib, file)
+  )
+  
+  # Mirrors for the Overview page citation block (same content, separate output IDs)
+  output$download_citation_txt2 <- downloadHandler(
+    filename = function() "water_equality_citation.txt",
+    content  = function(file) writeLines(citation_plain, file)
+  )
+  
+  output$download_citation_bib2 <- downloadHandler(
+    filename = function() "water_equality_citation.bib",
+    content  = function(file) writeLines(citation_bib, file)
+  )
   
   # Download handler for FIB data
   output$download_fib_data <- downloadHandler(
