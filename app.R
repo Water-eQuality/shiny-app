@@ -1288,9 +1288,9 @@ ui <- navbarPage(
                          HTML("Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., &amp; Tran, T. (2026).
                                <em>Water (e)Quality: Evaluating Equity and Efficacy of LA County&#39;s Stormwater
                                Capture Projects</em> (v1.0.0). Zenodo.
-                               <a href=\'https://doi.org/10.5281/zenodo.20076210\' target=\'_blank\'
+                               <a href=\'https://doi.org/10.5281/zenodo.20090531\' target=\'_blank\'
                                   style=\'color:#005CB9; font-weight:600;\'>
-                               https://doi.org/10.5281/zenodo.20076210</a>")
+                               https://doi.org/10.5281/zenodo.20090531</a>")
                      ),
                      div(style = "display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;",
                          downloadButton("download_citation_txt2",
@@ -2193,69 +2193,11 @@ ui <- navbarPage(
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
                              )
              )),
-             
-             # --- Cite This Work ---
-             fluidRow(column(12,
-                             div(style = "border-radius: 12px; overflow: hidden;
-                             box-shadow: 0 2px 15px rgba(0,0,0,0.08); margin-top: 0.5rem; margin-bottom: 2rem;",
-                                 
-                                 # Header bar
-                                 div(style = "background: #0E4C90; padding: 1.1rem 1.75rem;
-                                 display: flex; align-items: center; gap: 0.75rem;",
-                                     icon("quote-right", style = "color: white; font-size: 1.1rem;"),
-                                     div(
-                                       div(style = "font-family: Montserrat, sans-serif; font-weight: 700;
-                                      color: white; font-size: 1rem; letter-spacing: 0.3px;",
-                                           "Cite This Work"),
-                                       div(style = "font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 1px;",
-                                           "Use the citation below to reference this dashboard or the associated report.")
-                                     )
-                                 ),
-                                 
-                                 # Citation body
-                                 div(style = "background: #f8fafa; padding: 1.5rem 1.75rem;",
-                                     
-                                     # Citation text box
-                                     div(style = "background: white; border-left: 5px solid #00B6B6;
-                                    border-radius: 0 10px 10px 0; padding: 1.1rem 1.4rem;
-                                    font-size: 0.9rem; line-height: 1.8; color: #263746;
-                                    font-family: 'Source Sans Pro', sans-serif;
-                                    box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 1.1rem;",
-                                         HTML("Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., &amp; Tran, T. (2026).
-                                 <em>Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater
-                                 Capture Projects</em> (v1.0.0). Zenodo.
-                                 <a href='https://doi.org/10.5281/zenodo.20076210'
-                                    target='_blank' style='color:#005CB9; font-weight:600;'>
-                                 https://doi.org/10.5281/zenodo.20076210</a>")
-                                     ),
-                                     
-                                     # Download button row
-                                     div(style = "display: flex; gap: 0.75rem; flex-wrap: wrap;",
-                                         downloadButton("download_citation_txt",
-                                                        label = tagList(icon("file-alt", style="margin-right:6px;"), "Download .txt"),
-                                                        style = "background: #00B6B6; color: white; border: none;
-                                                   border-radius: 8px; padding: 0.55rem 1.25rem;
-                                                   font-weight: 700; font-size: 0.8rem;
-                                                   font-family: Montserrat, sans-serif;
-                                                   letter-spacing: 0.5px; text-transform: uppercase;
-                                                   display: inline-flex; align-items: center; cursor: pointer;"),
-                                         downloadButton("download_citation_bib",
-                                                        label = tagList(icon("graduation-cap", style="margin-right:6px;"), "Download .bib"),
-                                                        style = "background: #0E4C90; color: white; border: none;
-                                                   border-radius: 8px; padding: 0.55rem 1.25rem;
-                                                   font-weight: 700; font-size: 0.8rem;
-                                                   font-family: Montserrat, sans-serif;
-                                                   letter-spacing: 0.5px; text-transform: uppercase;
-                                                   display: inline-flex; align-items: center; cursor: pointer;")
-                                     )
-                                 )
-                             )
-             ))
+     )
              
            )
   )
   
-)
 
 
 # --- SERVER ---
@@ -2997,56 +2939,33 @@ server <- function(input, output, session) {
     p
   })
   
-  # Citation text strings (shared)
-  citation_plain <- paste0(
-    "Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., & Tran, T. (2026).\n",
-    "Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater\n",
-    "Capture Projects (v1.0.0). Zenodo.\n",
-    "https://doi.org/10.5281/zenodo.20076210"
-  )
-  
-  citation_bib <- paste0(
-    "@software{anderson_cervantes_2026_weq,\n",
-    "  author       = {Anderson, Claire and Cervantes, Samuel and\n",
-    "                   Gavigan, Nico and Khosravi, Lili and Tran, Tina},\n",
-    "  title        = {{Water (e)Quality: Evaluating Equity and Efficacy\n",
-    "                   of LA County's Stormwater Capture Projects}},\n",
-    "  year         = 2026,\n",
-    "  publisher    = {Zenodo},\n",
-    "  version      = {v1.0.0},\n",
-    "  doi          = {10.5281/zenodo.20076210},\n",
-    "  url          = {https://doi.org/10.5281/zenodo.20076210}\n",
-    "}"
-  )
-  
-  output$download_citation_txt <- downloadHandler(
-    filename = function() "water_equality_citation.txt",
-    content  = function(file) writeLines(citation_plain, file)
-  )
-  
-  output$download_citation_bib <- downloadHandler(
-    filename = function() "water_equality_citation.bib",
-    content  = function(file) writeLines(citation_bib, file)
-  )
-  
-  # Mirrors for the Overview page citation block (same content, separate output IDs)
   output$download_citation_txt2 <- downloadHandler(
     filename = function() "water_equality_citation.txt",
-    content  = function(file) writeLines(citation_plain, file)
+    content = function(file) {
+      writeLines(
+        "Anderson, C., Cervantes, S., Gavigan, N., Khosravi, L., & Tran, T. (2026). Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater Capture Projects (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.20090531",
+        file
+      )
+    }
   )
   
   output$download_citation_bib2 <- downloadHandler(
     filename = function() "water_equality_citation.bib",
-    content  = function(file) writeLines(citation_bib, file)
-  )
-  
-  # Download handler for FIB data
-  output$download_fib_data <- downloadHandler(
-    filename = function() paste0("htb_beach_monitoring_data_", Sys.Date(), ".csv"),
     content = function(file) {
-      write_csv(fib_data, file)
+      writeLines(c(
+        "@software{anderson2026water,",
+        "  author    = {Anderson, Claire and Cervantes, Samuel and Gavigan, Nico and Khosravi, Lili and Tran, Tina},",
+        "  title     = {Water (e)Quality: Evaluating Equity and Efficacy of LA County's Stormwater Capture Projects},",
+        "  year      = {2026},",
+        "  version   = {v1.0.0},",
+        "  publisher = {Zenodo},",
+        "  doi       = {10.5281/zenodo.20090531},",
+        "  url       = {https://doi.org/10.5281/zenodo.20090531}",
+        "}"
+      ), file)
     }
   )
+  
 }
 
 # --- Run App ---
