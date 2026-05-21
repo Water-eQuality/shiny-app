@@ -1382,7 +1382,7 @@ ui <- navbarPage(
                                return;
                              }
                              var body = 'From: ' + name + ' (' + email + ')\\n\\n' + message;
-                             var mailto = 'mailto:samuelcervantes@bren.ucsb.edu'
+                             var mailto = 'mailto:beachreportcard@healthebay.org'
                                + '?subject=' + encodeURIComponent(subject || 'Dashboard Inquiry')
                                + '&body='    + encodeURIComponent(body);
                              window.location.href = mailto;
@@ -2010,12 +2010,12 @@ ui <- navbarPage(
                                    style="color:#555;line-height:1.6;font-size:0.9rem;"),
                                  div(class="info-box accent-algae", style="margin:0.75rem 0;padding:0.75rem 1rem;",
                                      p(HTML("Safe Clean Water Program. <em>WRAMPS Data.</em> 
-                              <a href='https://portal.safecleanwaterla.org/wmms/downloads'
+                              <a href='https://wramps2.org/progress-reporting'
                               target='_blank' style='color:#005CB9;'>
-                              https://portal.safecleanwaterla.org/wmms/downloads</a>"),
+                             https://wramps2.org/progress-reporting</a>"),
                                        style="margin:0;font-size:0.85rem;line-height:1.6;")
                                  ),
-                                 tags$a(href="https://portal.safecleanwaterla.org/wmms/downloads",
+                                 tags$a(href="https://wramps2.org/progress-reporting",
                                         target="_blank", class="btn btn-primary",
                                         style="display:inline-flex;align-items:center;font-size:0.8rem;padding:0.5rem 1rem;margin-top:0.75rem;",
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
