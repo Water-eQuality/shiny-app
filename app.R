@@ -1755,7 +1755,7 @@ ui <- navbarPage(
                             div(style = "display: flex; align-items: center; background: #f8f9fa;
                    border-radius: 8px; padding: 0.4rem 0.75rem; gap: 8px;",
                                 span(style = "width: 16px; height: 16px; border-radius: 3px;
-               background-color: #F47E48; display: inline-block;
+               background-color: #A569BD; display: inline-block;
                border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); flex-shrink: 0;"),
                                 div(
                                   div(style = "font-size: 12px; font-weight: 600; color: #263746; line-height: 1.2;", "LAUSD"),
@@ -2078,9 +2078,9 @@ ui <- navbarPage(
              
              # 5. LAUSD Parcels
              fluidRow(column(12,
-                             div(class="feature-card accent-sunset", style="border-top:5px solid #F47E48;margin-bottom:1.25rem;",
+                             div(class="feature-card accent-sunset", style="border-top:5px solid #A569BD;margin-bottom:1.25rem;",
                                  div(style="display:flex;align-items:center;margin-bottom:1rem;",
-                                     div(class="feature-icon icon-sunset", style="margin-bottom:0;margin-right:1rem;background-color:#F47E48;", icon("school")),
+                                     div(class="feature-icon icon-sunset", style="margin-bottom:0;margin-right:1rem;background-color:#A569BD;", icon("school")),
                                      div(h3("Assessor Publicly Owned Parcels (Current)",
                                             style="margin:0;color:#0E4C90;font-size:1.2rem;"),
                                          p("LA County Open Data Portal — LAUSD School Parcels",
@@ -2193,11 +2193,11 @@ ui <- navbarPage(
                                         icon("external-link-alt", style="margin-right:6px;"), "Visit Source")
                              )
              )),
-     )
-             
            )
+           
   )
-  
+)
+
 
 
 # --- SERVER ---
@@ -2639,15 +2639,16 @@ server <- function(input, output, session) {
           proxy %>%
             addPolygons(
               data = lausd_data,
-              color = "#F47E48",
+              color = "#6C3483",
               weight = 1,
               opacity = 0.9,
-              fillOpacity = 0.35,
+              fillColor = "#A569BD",
+              fillOpacity = 0.4,
               smoothFactor = 0.5,
               group = "LAUSD School Parcels",
               popup = ~paste0(
                 "<div style='font-family: Source Sans Pro, sans-serif; min-width: 180px;'>",
-                "<div style='background-color: #F47E48; color: white; padding: 10px;
+                "<div style='background-color: #6C3483; color: white; padding: 10px;
                  margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>",
                 "<strong style='font-family: Montserrat, sans-serif;'>LAUSD School Parcel</strong></div>",
                 "<p style='margin: 0; padding-top: 4px; color: #263746; font-size: 13px;'>",
