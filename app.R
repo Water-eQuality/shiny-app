@@ -2415,7 +2415,12 @@ server <- function(input, output, session) {
           primaryLengthUnit = "miles",
           secondaryLengthUnit = "kilometers",
           primaryAreaUnit = "sqmiles"
-        )
+        ) %>%
+        # Draw order: DAC at bottom, then parks, then LAUSD, then all points on top
+        addMapPane("dac_pane",    zIndex = 405) %>%
+        addMapPane("parks_pane",  zIndex = 410) %>%
+        addMapPane("lausd_pane",  zIndex = 415) %>%
+        addMapPane("points_pane", zIndex = 450)
       
       if (!is.null(la_county_geo) && nrow(la_county_geo) > 0) {
         m <- m %>%
@@ -2544,6 +2549,7 @@ server <- function(input, output, session) {
                 weight = 0.5,
                 smoothFactor = 0.5,
                 group = "Disadvantaged Communities",
+                options = pathOptions(pane = "dac_pane"),
                 highlightOptions = highlightOptions(
                   weight = 2,
                   color = "#263746",
@@ -2579,6 +2585,7 @@ server <- function(input, output, session) {
                 fillOpacity = 0.7,
                 weight = 1,
                 group = "Disadvantaged Communities",
+                options = pathOptions(pane = "dac_pane"),
                 popup = ~paste0(
                   "<div style='font-family: Source Sans Pro, sans-serif; min-width: 220px;'>",
                   "<div style='background-color: #d73027; color: white; padding: 10px;
@@ -2614,6 +2621,7 @@ server <- function(input, output, session) {
               fillOpacity = 0.35,
               smoothFactor = 0.5,
               group = "Park Polygons",
+              options = pathOptions(pane = "parks_pane"),
               popup = "<div style='font-family: Source Sans Pro, sans-serif; min-width: 160px;'>
                        <div style='background-color: #2ca25f; color: white; padding: 10px;
                          margin: -14px -18px 10px -18px; border-radius: 12px 12px 0 0;'>
@@ -2646,6 +2654,7 @@ server <- function(input, output, session) {
               fillOpacity = 0.4,
               smoothFactor = 0.5,
               group = "LAUSD School Parcels",
+              options = pathOptions(pane = "lausd_pane"),
               popup = ~paste0(
                 "<div style='font-family: Source Sans Pro, sans-serif; min-width: 180px;'>",
                 "<div style='background-color: #6C3483; color: white; padding: 10px;
@@ -2692,7 +2701,8 @@ server <- function(input, output, session) {
                        ""),
                 "</table></div>"
               ),
-              group = "Stormwater Projects"
+              group = "Stormwater Projects",
+              options = pathOptions(pane = "points_pane")
             )
         }
       }
@@ -2718,7 +2728,8 @@ server <- function(input, output, session) {
                 "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Beach Monitoring Site</p>",
                 "</div>"
               ),
-              group = "Beach Monitoring Sites"
+              group = "Beach Monitoring Sites",
+              options = pathOptions(pane = "points_pane")
             )
         }
       }
@@ -2744,7 +2755,8 @@ server <- function(input, output, session) {
                 "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Order in watershed: ", order_in_ws, "</p>",
                 "</div>"
               ),
-              group = "River Monitoring Sites"
+              group = "River Monitoring Sites",
+              options = pathOptions(pane = "points_pane")
             )
         }
       }
@@ -2770,7 +2782,8 @@ server <- function(input, output, session) {
                 "<p style='margin: 0; padding-top: 5px; color: #666; font-size: 12px;'>Precipitation Station</p>",
                 "</div>"
               ),
-              group = "LA County Precip Stations"
+              group = "LA County Precip Stations",
+              options = pathOptions(pane = "points_pane")
             )
         }
       }
